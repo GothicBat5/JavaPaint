@@ -101,8 +101,10 @@ public class DrawingCanva extends JPanel
     public void setColor(Color c)
     {
         drawColor = c;
-        if (g2 != null) g2.setPaint(drawColor);
-    }
+        if (g2 != null) 
+        {
+            g2.setPaint(drawColor);
+        }
 
     public void setBrushSize(int size)
     {

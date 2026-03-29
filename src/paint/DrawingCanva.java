@@ -7,25 +7,25 @@ import java.awt.image.BufferedImage;
 
 public class DrawingCanva extends JPanel
 {
-
     private BufferedImage canvas;
+    private BufferedImage overlayCanvas;   //live shape preview layer
     private Graphics2D g2;
     private int prevX, prevY;
     private boolean dragging;
     private Color drawColor = Color.BLACK;
     private int brushSize = 5;
-    public boolean erasing = false;//Just got add
-    public int startX, startY;
+    private boolean erasing = false;
+    private int startX, startY;
 
     public void setErasing(boolean e)
     {
         erasing = e;
-    } //with these upgrade
+    }
 
     public DrawingCanva()
     {
         setBackground(Color.WHITE);
-        setDoubleBuffered(true); //should be ON for image buffer
+        setDoubleBuffered(true);
 
         addMouseListener(new MouseAdapter()
         {
@@ -47,18 +47,14 @@ public class DrawingCanva extends JPanel
             {
                 dragging = false;
 
-                //beginning of it
                 int endX = e.getX();
                 int endY = e.getY();
 
                 if (g2 == null) return;
 
-                g2.setStroke(new BasicStroke(
-                        brushSize,
-                        BasicStroke.CAP_ROUND,
-                        BasicStroke.JOIN_ROUND
-                ));
+                g2.setStroke(new BasicStroke(brushSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
+                //final shape to the real canvas
                 switch (currentTool)
                 {
                     case RECT:
@@ -83,7 +79,8 @@ public class DrawingCanva extends JPanel
                         g2.drawLine(startX, startY, endX, endY);
                         break;
                 }
-                //from the end
+
+                overlayCanvas = null; // clear the preview overlay
                 repaint();
             }
         });
@@ -93,23 +90,57 @@ public class DrawingCanva extends JPanel
             @Override
             public void mouseDragged(MouseEvent e)
             {
-                if (dragging && g2 != null && currentTool == Tool.BRUSH)
+                if (!dragging || g2 == null) return;
+
+                int x = e.getX();
+                int y = e.getY();
+
+                if (currentTool == Tool.BRUSH)
                 {
-                    int x = e.getX();
-                    int y = e.getY();
-
-                    g2.setStroke(new BasicStroke(
-                            brushSize,
-                            BasicStroke.CAP_ROUND,
-                            BasicStroke.JOIN_ROUND
-                    ));
-
+                    g2.setStroke(new BasicStroke(brushSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                     g2.drawLine(prevX, prevY, x, y);
-
                     prevX = x;
                     prevY = y;
-                    repaint();
+                    overlayCanvas = null; // no overlay needed for brush
                 }
+                else
+                {
+                    //live preview on a fresh transparent overlay
+                    overlayCanvas = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D og = overlayCanvas.createGraphics();
+
+                    og.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    og.setColor(drawColor);
+                    og.setStroke(new BasicStroke(brushSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+                    switch (currentTool)
+                    {
+                        case RECT:
+                            og.drawRect(
+                                    Math.min(startX, x),
+                                    Math.min(startY, y),
+                                    Math.abs(x - startX),
+                                    Math.abs(y - startY)
+                            );
+                            break;
+
+                        case OVAL:
+                            og.drawOval(
+                                    Math.min(startX, x),
+                                    Math.min(startY, y),
+                                    Math.abs(x - startX),
+                                    Math.abs(y - startY)
+                            );
+                            break;
+
+                        case LINE:
+                            og.drawLine(startX, startY, x, y);
+                            break;
+                    }
+                    og.dispose();
+                }
+
+                repaint();
             }
         });
     }
@@ -121,21 +152,22 @@ public class DrawingCanva extends JPanel
 
         if (canvas == null)
         {
-            canvas = new BufferedImage(
-                    getWidth(), getHeight(),
-                    BufferedImage.TYPE_INT_RGB
-            );
+            canvas = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+
             g2 = canvas.createGraphics();
-            g2.setRenderingHint
-            (
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-            );
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setPaint(Color.WHITE);
             g2.fillRect(0, 0, getWidth(), getHeight());
             g2.setPaint(erasing ? Color.WHITE : drawColor);
         }
+
         g.drawImage(canvas, 0, 0, null);
+
+        //paint the live preview overlay on top if it exists
+        if (overlayCanvas != null)
+        {
+            g.drawImage(overlayCanvas, 0, 0, null);
+        }
     }
 
     public void clear()
@@ -164,11 +196,7 @@ public class DrawingCanva extends JPanel
     {
         if (g2 != null)
         {
-            g2.fillOval(
-                    x - brushSize / 2,
-                    y - brushSize / 2,
-                    brushSize,
-                    brushSize );
+            g2.fillOval(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
             repaint();
         }
     }
@@ -190,4 +218,3 @@ public class DrawingCanva extends JPanel
         return canvas;
     }
 }
-//192 lines already

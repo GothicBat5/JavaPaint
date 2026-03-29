@@ -1,18 +1,25 @@
-package paint; 
+package paint;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 public class SavingThis
 {
+    private SavingThis()
+    {
+
+    };
+
     public static void saveImage(BufferedImage image, JFrame parent)
     {
         JFileChooser fileChooser = new JFileChooser();
 
         fileChooser.setDialogTitle("Save Image");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("PNG Images", "png"));
 
         int userSelection = fileChooser.showSaveDialog(parent);
 
@@ -28,8 +35,8 @@ public class SavingThis
             }
             catch (IOException ex)
             {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(parent, "Error saving file.");
+                //upt
+                JOptionPane.showMessageDialog(parent, "Error saving file: " + ex.getMessage(), "Save Error", JOptionPane.ERROR_MESSAGE); 
             }
         }
     }

@@ -7,15 +7,12 @@ import java.awt.image.BufferedImage;
 
 public class DrawingCanva extends JPanel
 {
-
     private BufferedImage canvas;
     private BufferedImage overlayCanvas;
-    
     private Graphics2D g2;
     private int prevX, prevY;
     private boolean dragging;
     private Color drawColor = Color.BLACK;
-    
     private int brushSize = 5;
     private boolean erasing = false;
     private int startX, startY;
@@ -33,13 +30,12 @@ public class DrawingCanva extends JPanel
         this.canvasWidth  = canvasWidth;
         this.canvasHeight = canvasHeight;
 
-        setPreferredSize(new Dimension(canvasWidth, canvasHeight));
-        setBackground(Color.LIGHT_GRAY);
+        setBackground(new Color(14, 6, 28)); // dark bg outside canvas area
         setDoubleBuffered(true);
 
         addMouseListener(new MouseAdapter()
         {
-            
+
             @Override
             public void mousePressed(MouseEvent e)
             {
@@ -52,7 +48,6 @@ public class DrawingCanva extends JPanel
             @Override
             public void mouseReleased(MouseEvent e)
             {
-                
                 dragging = false;
                 int endX = e.getX();
                 int endY = e.getY();
@@ -76,14 +71,13 @@ public class DrawingCanva extends JPanel
                 }
 
                 overlayCanvas = null;
-                
                 repaint();
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter()
         {
-            
+
             @Override
             public void mouseDragged(MouseEvent e)
             {
@@ -99,6 +93,7 @@ public class DrawingCanva extends JPanel
                     prevY = y;
                     overlayCanvas = null;
                 }
+
                 else
                 {
                     overlayCanvas = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_ARGB);
@@ -165,7 +160,10 @@ public class DrawingCanva extends JPanel
     public void setColor(Color c)
     {
         drawColor = c;
-        if (g2 != null) g2.setPaint(drawColor);
+        if (g2 != null)
+        {
+            g2.setPaint(drawColor);
+        }
     }
 
     public void setBrushSize(int size)
@@ -182,10 +180,10 @@ public class DrawingCanva extends JPanel
         }
     }
 
-    public enum Tool {
+    public enum Tool
+    {
 
         BRUSH, RECT, OVAL, LINE
-
     }
 
     private Tool currentTool = Tool.BRUSH;
@@ -197,6 +195,7 @@ public class DrawingCanva extends JPanel
 
     public BufferedImage getImage()
     {
+
         return canvas;
     }
 }

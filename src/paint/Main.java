@@ -11,6 +11,6 @@ public class Main
         * Place where the main execution code locks in
         * */
         
-        SwingUtilities.invokeLater(PaintF::new);
+        SwingUtilities.invokeLater(Launcher::new);
     }
 }

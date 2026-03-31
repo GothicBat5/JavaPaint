@@ -8,25 +8,25 @@ public class PaintF extends JFrame
     private final DrawingCanva canvas;
     private Color currentColor = Color.BLACK;
 
-    //Track the currently selected tool button for highlight
     private JButton activeToolButton = null;
-    private static final Color ACTIVE_COLOR   = new Color(180, 210, 255); // light blue highlight
-    private static final Color DEFAULT_COLOR  = UIManager.getColor("Button.background");
+    private static final Color ACTIVE_COLOR  = new Color(180, 210, 255);
+    private static final Color DEFAULT_COLOR = UIManager.getColor("Button.background");
 
-    public PaintF()
+    //Accepts canvasfrom Launcher
+    public PaintF(int canvasWidth, int canvasHeight)
     {
         setTitle("JanePaint v2");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1050, 650);
+
+        setSize(canvasWidth + 140, canvasHeight + 80);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        canvas = new DrawingCanva();
+        canvas = new DrawingCanva(canvasWidth, canvasHeight);
 
-        //TOP BAR  global actions only
-        JButton clearBtn  = new JButton("Clear");
-        JButton colorBtn  = new JButton("Choose Color");
-        JButton saveBtn   = new JButton("Save");
+        JButton clearBtn = new JButton("Clear");
+        JButton colorBtn = new JButton("Choose Color");
+        JButton saveBtn  = new JButton("Save");
 
         JSlider brushSizeSlider = new JSlider(1, 50, 5);
         brushSizeSlider.setPaintTicks(true);
@@ -56,14 +56,13 @@ public class PaintF extends JFrame
         topPanel.add(brushSizeSlider);
         topPanel.add(saveBtn);
 
-        // ── LEFT PANEL — tool selection with unicode icons
-        JButton brushBtn = makeToolButton("\u270F  Brush",   DrawingCanva.Tool.BRUSH);
-        JButton rectBtn  = makeToolButton("\u25AD  Rect",    DrawingCanva.Tool.RECT);
-        JButton ovalBtn  = makeToolButton("\u25CB  Oval",    DrawingCanva.Tool.OVAL);
-        JButton lineBtn  = makeToolButton("\u2571  Line",    DrawingCanva.Tool.LINE);
+        //Left
+        JButton brushBtn  = makeToolButton("\u270F  Brush",  DrawingCanva.Tool.BRUSH);
+        JButton rectBtn   = makeToolButton("\u25AD  Rect",   DrawingCanva.Tool.RECT);
+        JButton ovalBtn   = makeToolButton("\u25CB  Oval",   DrawingCanva.Tool.OVAL);
+        JButton lineBtn   = makeToolButton("\u2571  Line",   DrawingCanva.Tool.LINE);
         JButton eraserBtn = new JButton("\u2327  Eraser");
 
-        // Style eraser separately since it doesn't set a Tool enum
         styleToolButton(eraserBtn);
         eraserBtn.addActionListener(e -> {
             canvas.setColor(Color.WHITE);
@@ -71,7 +70,6 @@ public class PaintF extends JFrame
             setActiveButton(eraserBtn);
         });
 
-        // Set brush as the default active tool on startup
         setActiveButton(brushBtn);
 
         JPanel leftPanel = new JPanel();
@@ -79,7 +77,7 @@ public class PaintF extends JFrame
         leftPanel.setBorder(BorderFactory.createEmptyBorder(12, 6, 12, 6));
         leftPanel.setBackground(new Color(240, 240, 240));
 
-        leftPanel.add(makeLabel("Tool Selection:"));
+        leftPanel.add(makeLabel("TOOLS"));
         leftPanel.add(Box.createVerticalStrut(6));
         leftPanel.add(brushBtn);
         leftPanel.add(Box.createVerticalStrut(4));
@@ -91,15 +89,12 @@ public class PaintF extends JFrame
         leftPanel.add(Box.createVerticalStrut(4));
         leftPanel.add(eraserBtn);
 
-        // Layout
-        add(topPanel,   BorderLayout.NORTH);
-        add(leftPanel,  BorderLayout.WEST);
-        add(canvas,     BorderLayout.CENTER);
-
+        add(topPanel,  BorderLayout.NORTH);
+        add(leftPanel, BorderLayout.WEST);
+        add(canvas,    BorderLayout.CENTER);
         setVisible(true);
     }
 
-    // Creates a tool button wired to a DrawingCanva.Tool with highlight support
     private JButton makeToolButton(String label, DrawingCanva.Tool tool)
     {
         JButton btn = new JButton(label);
@@ -112,7 +107,6 @@ public class PaintF extends JFrame
         return btn;
     }
 
-    // Shared visual style for all tool buttons
     private void styleToolButton(JButton btn)
     {
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -123,18 +117,17 @@ public class PaintF extends JFrame
         btn.setHorizontalAlignment(SwingConstants.LEFT);
     }
 
-    // Highlights the selected tool button and resets the previous one
     private void setActiveButton(JButton btn)
     {
         if (activeToolButton != null)
         {
             activeToolButton.setBackground(DEFAULT_COLOR);
+            activeToolButton = btn;
+            activeToolButton.setBackground(ACTIVE_COLOR);
         }
-        activeToolButton = btn;
-        activeToolButton.setBackground(ACTIVE_COLOR);
+
     }
 
-    // Small section label for the left panel
     private JLabel makeLabel(String text)
     {
         JLabel label = new JLabel(text);

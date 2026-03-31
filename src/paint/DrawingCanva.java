@@ -7,91 +7,87 @@ import java.awt.image.BufferedImage;
 
 public class DrawingCanva extends JPanel
 {
+
     private BufferedImage canvas;
-    private BufferedImage overlayCanvas;   //live shape preview layer
+    private BufferedImage overlayCanvas;
+    
     private Graphics2D g2;
     private int prevX, prevY;
     private boolean dragging;
     private Color drawColor = Color.BLACK;
+    
     private int brushSize = 5;
     private boolean erasing = false;
     private int startX, startY;
+
+    private final int canvasWidth;
+    private final int canvasHeight;
 
     public void setErasing(boolean e)
     {
         erasing = e;
     }
 
-    public DrawingCanva()
+    public DrawingCanva(int canvasWidth, int canvasHeight)
     {
-        setBackground(Color.WHITE);
+        this.canvasWidth  = canvasWidth;
+        this.canvasHeight = canvasHeight;
+
+        setPreferredSize(new Dimension(canvasWidth, canvasHeight));
+        setBackground(Color.LIGHT_GRAY);
         setDoubleBuffered(true);
 
         addMouseListener(new MouseAdapter()
         {
+            
             @Override
             public void mousePressed(MouseEvent e)
             {
                 startX = prevX = e.getX();
                 startY = prevY = e.getY();
                 dragging = true;
-
-                if (currentTool == Tool.BRUSH)
-                {
-                    drawDot(prevX, prevY);
-                }
+                if (currentTool == Tool.BRUSH) drawDot(prevX, prevY);
             }
 
             @Override
             public void mouseReleased(MouseEvent e)
             {
+                
                 dragging = false;
-
                 int endX = e.getX();
                 int endY = e.getY();
-
                 if (g2 == null) return;
 
                 g2.setStroke(new BasicStroke(brushSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-                //final shape to the real canvas
                 switch (currentTool)
                 {
                     case RECT:
-                        g2.drawRect(
-                                Math.min(startX, endX),
-                                Math.min(startY, endY),
-                                Math.abs(endX - startX),
-                                Math.abs(endY - startY)
-                        );
+                        g2.drawRect(Math.min(startX, endX), Math.min(startY, endY),
+                                Math.abs(endX - startX), Math.abs(endY - startY));
                         break;
-
                     case OVAL:
-                        g2.drawOval(
-                                Math.min(startX, endX),
-                                Math.min(startY, endY),
-                                Math.abs(endX - startX),
-                                Math.abs(endY - startY)
-                        );
+                        g2.drawOval(Math.min(startX, endX), Math.min(startY, endY),
+                                Math.abs(endX - startX), Math.abs(endY - startY));
                         break;
-
                     case LINE:
                         g2.drawLine(startX, startY, endX, endY);
                         break;
                 }
 
-                overlayCanvas = null; // clear the preview overlay
+                overlayCanvas = null;
+                
                 repaint();
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter()
         {
+            
             @Override
             public void mouseDragged(MouseEvent e)
             {
                 if (!dragging || g2 == null) return;
-
                 int x = e.getX();
                 int y = e.getY();
 
@@ -101,14 +97,12 @@ public class DrawingCanva extends JPanel
                     g2.drawLine(prevX, prevY, x, y);
                     prevX = x;
                     prevY = y;
-                    overlayCanvas = null; // no overlay needed for brush
+                    overlayCanvas = null;
                 }
                 else
                 {
-                    //live preview on a fresh transparent overlay
-                    overlayCanvas = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+                    overlayCanvas = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D og = overlayCanvas.createGraphics();
-
                     og.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     og.setColor(drawColor);
                     og.setStroke(new BasicStroke(brushSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -116,30 +110,19 @@ public class DrawingCanva extends JPanel
                     switch (currentTool)
                     {
                         case RECT:
-                            og.drawRect(
-                                    Math.min(startX, x),
-                                    Math.min(startY, y),
-                                    Math.abs(x - startX),
-                                    Math.abs(y - startY)
-                            );
+                            og.drawRect(Math.min(startX, x), Math.min(startY, y),
+                                    Math.abs(x - startX), Math.abs(y - startY));
                             break;
-
                         case OVAL:
-                            og.drawOval(
-                                    Math.min(startX, x),
-                                    Math.min(startY, y),
-                                    Math.abs(x - startX),
-                                    Math.abs(y - startY)
-                            );
+                            og.drawOval(Math.min(startX, x), Math.min(startY, y),
+                                    Math.abs(x - startX), Math.abs(y - startY));
                             break;
-
                         case LINE:
                             og.drawLine(startX, startY, x, y);
                             break;
                     }
                     og.dispose();
                 }
-
                 repaint();
             }
         });
@@ -152,18 +135,16 @@ public class DrawingCanva extends JPanel
 
         if (canvas == null)
         {
-            canvas = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-
+            canvas = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_RGB);
             g2 = canvas.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setPaint(Color.WHITE);
-            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.fillRect(0, 0, canvasWidth, canvasHeight);
             g2.setPaint(erasing ? Color.WHITE : drawColor);
         }
 
         g.drawImage(canvas, 0, 0, null);
 
-        //paint the live preview overlay on top if it exists
         if (overlayCanvas != null)
         {
             g.drawImage(overlayCanvas, 0, 0, null);
@@ -175,7 +156,7 @@ public class DrawingCanva extends JPanel
         if (g2 != null)
         {
             g2.setPaint(Color.WHITE);
-            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.fillRect(0, 0, canvasWidth, canvasHeight);
             g2.setPaint(drawColor);
             repaint();
         }
@@ -201,9 +182,10 @@ public class DrawingCanva extends JPanel
         }
     }
 
-    public enum Tool
-    {
+    public enum Tool {
+
         BRUSH, RECT, OVAL, LINE
+
     }
 
     private Tool currentTool = Tool.BRUSH;

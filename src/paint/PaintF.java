@@ -44,7 +44,7 @@ public class PaintF extends JFrame
 
         JButton clearBtn = makeTopButton("Clear", NEON_RED);
         JButton colorBtn = makeTopButton("Choose Color", PINK);
-        JButton saveBtn  = makeTopButton("Save", MAGENTA);
+        JButton saveBtn = makeTopButton("Save", MAGENTA);
 
         JLabel sizeLabel = new JLabel("Brush Size:");
         sizeLabel.setForeground(TEXT_SECONDARY);
@@ -83,10 +83,10 @@ public class PaintF extends JFrame
 
         JLabel toolsLabel = makeToolsHeader("TOOLS");
 
-        JButton brushBtn = makeToolButton("\u270F  Brush",  DrawingCanva.Tool.BRUSH);
-        JButton rectBtn = makeToolButton("\u25AD  Rect",   DrawingCanva.Tool.RECT);
-        JButton ovalBtn = makeToolButton("\u25CB  Oval",   DrawingCanva.Tool.OVAL);
-        JButton lineBtn = makeToolButton("\u2571  Line",   DrawingCanva.Tool.LINE);
+        JButton brushBtn = makeToolButton("\u270F  Brush", DrawingCanva.Tool.BRUSH);
+        JButton rectBtn = makeToolButton("\u25AD  Rect", DrawingCanva.Tool.RECT);
+        JButton ovalBtn = makeToolButton("\u25CB  Oval", DrawingCanva.Tool.OVAL);
+        JButton lineBtn = makeToolButton("\u2571  Line", DrawingCanva.Tool.LINE);
         JButton eraserBtn = new JButton("\u2327  Eraser");
 
         styleToolButton(eraserBtn);
@@ -112,9 +112,9 @@ public class PaintF extends JFrame
         leftPanel.add(Box.createVerticalStrut(6));
         leftPanel.add(eraserBtn);
 
-        add(topPanel,  BorderLayout.NORTH);
+        add(topPanel, BorderLayout.NORTH);
         add(leftPanel, BorderLayout.WEST);
-        add(canvas,    BorderLayout.CENTER);
+        add(canvas, BorderLayout.CENTER);
 
         setVisible(true);
     }
@@ -131,19 +131,22 @@ public class PaintF extends JFrame
         btn.addMouseListener(new MouseAdapter()
         {
 
-            @Override public void mouseEntered(MouseEvent e)
+            @Override 
+            public void mouseEntered(MouseEvent e)
             {
                 btn.setBackground(new Color(55, 10, 75));
                 btn.setForeground(accent);
                 btn.setBorder(BorderFactory.createLineBorder(accent, 1, true));
             }
 
-            @Override public void mouseExited(MouseEvent e)
+            @Override 
+            public void mouseExited(MouseEvent e)
             {
                 btn.setBackground(new Color(35, 10, 55));
                 btn.setForeground(TEXT_SECONDARY);
                 btn.setBorder(BorderFactory.createLineBorder(BTN_BORDER, 1, true));
             }
+            
         });
         return btn;
     }

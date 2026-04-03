@@ -50,6 +50,7 @@ public class Launcher extends JFrame
     {
         JPanel splash = new JPanel(new BorderLayout())
         {
+            
             @Override
             protected void paintComponent(Graphics g)
             {
@@ -121,7 +122,7 @@ public class Launcher extends JFrame
         bar.setBackground(PROGRESS_BG);
 
         bottomBar.add(loadingLabel, BorderLayout.NORTH);
-        bottomBar.add(bar,          BorderLayout.SOUTH);
+        bottomBar.add(bar, BorderLayout.SOUTH);
 
         splash.add(bottomBar, BorderLayout.SOUTH);
 
@@ -140,6 +141,7 @@ public class Launcher extends JFrame
     {
         JPanel menu = new JPanel(new BorderLayout())
         {
+            
             @Override
             protected void paintComponent(Graphics g)
             {
@@ -160,9 +162,8 @@ public class Launcher extends JFrame
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(BG_HEADER);
         header.setOpaque(true);
-        header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 0, MAGENTA),
-                BorderFactory.createEmptyBorder(16, 24, 16, 24)
+        header.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, MAGENTA),
+        BorderFactory.createEmptyBorder(16, 24, 16, 24)
         ));
 
         JLabel title = new JLabel("JanePaint  \u2726  v2");
@@ -185,11 +186,15 @@ public class Launcher extends JFrame
 
         closeBtn.addMouseListener(new MouseAdapter()
         {
-            @Override public void mouseEntered(MouseEvent e)
+            
+            @Override 
+            public void mouseEntered(MouseEvent e)
             {
                 closeBtn.setForeground(NEON_RED);
             }
-            @Override public void mouseExited(MouseEvent e)
+            
+            @Override 
+            public void mouseExited(MouseEvent e)
             {
                 closeBtn.setForeground(TEXT_DIM);
             }
@@ -202,8 +207,8 @@ public class Launcher extends JFrame
         titleStack.add(Box.createVerticalStrut(3));
         titleStack.add(subtitle);
 
-        header.add(titleStack,  BorderLayout.WEST);
-        header.add(closeBtn,    BorderLayout.EAST);
+        header.add(titleStack, BorderLayout.WEST);
+        header.add(closeBtn, BorderLayout.EAST);
         menu.add(header, BorderLayout.NORTH);
 
         //Center
@@ -256,6 +261,7 @@ public class Launcher extends JFrame
     {
         JPanel sizePanel = new JPanel(new BorderLayout())
         {
+            
             @Override
             protected void paintComponent(Graphics g)
             {
@@ -274,9 +280,8 @@ public class Launcher extends JFrame
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(BG_HEADER);
         header.setOpaque(true);
-        header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 0, MAGENTA),
-                BorderFactory.createEmptyBorder(16, 24, 16, 24)
+        header.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, MAGENTA),
+        BorderFactory.createEmptyBorder(16, 24, 16, 24)
         ));
 
         JLabel title = new JLabel("New Project");
@@ -308,7 +313,7 @@ public class Launcher extends JFrame
 
         SpinnerNumberModel wModel = new SpinnerNumberModel(800, 100, 4000, 10);
         SpinnerNumberModel hModel = new SpinnerNumberModel(600, 100, 4000, 10);
-        JSpinner widthSpinner  = styledSpinner(new JSpinner(wModel));
+        JSpinner widthSpinner = styledSpinner(new JSpinner(wModel));
         JSpinner heightSpinner = styledSpinner(new JSpinner(hModel));
 
         String[][] presets = {
@@ -330,9 +335,8 @@ public class Launcher extends JFrame
             pb.setForeground(PINK);
             pb.setBorder(BorderFactory.createLineBorder(BTN_BORDER, 1, true));
             pb.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            pb.addActionListener(e -> {
-                widthSpinner.setValue(Integer.parseInt(p[1]));
-                heightSpinner.setValue(Integer.parseInt(p[2]));
+            pb.addActionListener(e -> {widthSpinner.setValue(Integer.parseInt(p[1]));
+            oheightSpinner.setValue(Integer.parseInt(p[2]));
             });
             presetRow.add(pb);
         }
@@ -379,10 +383,9 @@ public class Launcher extends JFrame
         createBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
         createBtn.setBorderPainted(false);
         createBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        createBtn.addActionListener(e -> {
-            int w = (int) widthSpinner.getValue();
-            int h = (int) heightSpinner.getValue();
-            launchPaintApp(w, h);
+        createBtn.addActionListener(e -> { int w = (int) widthSpinner.getValue();
+        int h = (int) heightSpinner.getValue();
+        launchPaintApp(w, h);
         });
 
         bottomBar.add(backBtn);
@@ -442,9 +445,8 @@ public class Launcher extends JFrame
         row.setOpaque(true);
         row.setMaximumSize(new Dimension(460, 68));
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        row.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(90, 0, 120), 1, true),
-                BorderFactory.createEmptyBorder(12, 18, 12, 18)
+        row.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(90, 0, 120), 1, true),
+        BorderFactory.createEmptyBorder(12, 18, 12, 18)
         ));
 
         JLabel accentBar = new JLabel(" ");
@@ -472,7 +474,9 @@ public class Launcher extends JFrame
 
         row.addMouseListener(new MouseAdapter()
         {
-            @Override public void mouseEntered(MouseEvent e)
+            
+            @Override 
+            public void mouseEntered(MouseEvent e)
             {
                 row.setBackground(BTN_HOVER);
                 row.setBorder(BorderFactory.createCompoundBorder(
@@ -481,7 +485,9 @@ public class Launcher extends JFrame
                 ));
                 row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
-            @Override public void mouseExited(MouseEvent e)
+            
+            @Override 
+            public void mouseExited(MouseEvent e)
             {
                 row.setBackground(new Color(30, 8, 50));
                 row.setBorder(BorderFactory.createCompoundBorder(
@@ -490,7 +496,9 @@ public class Launcher extends JFrame
                 ));
                 row.setCursor(Cursor.getDefaultCursor());
             }
-            @Override public void mouseClicked(MouseEvent e) { action.run(); }
+            
+            @Override 
+            public void mouseClicked(MouseEvent e) { action.run(); }
         });
 
         return row;

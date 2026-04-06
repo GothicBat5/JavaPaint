@@ -3,4 +3,7 @@ That's the only source code of my Java paint app project.
 I started the Java paint around 3rd Quarter of 2025, it was all just for fun.
 But right now I will start to improved it and add more features.
 
+Update some: April 6, 2026 + some new brushes.
+Knife kinda sucks, I'm too lazy to fix now wahaha
+
 The rest are just random things I created.

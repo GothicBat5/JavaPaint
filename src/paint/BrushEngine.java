@@ -90,32 +90,72 @@ public class BrushEngine
         }
     }
 
-//Random
+  //KNIFE???
+    private double prevAngle = 0; //keeps stroke continuity
+
     private void drawKnife(Graphics2D g2, int x1, int y1, int x2, int y2, int size)
     {
-        double angle = Math.atan2(y2 - y1, x2 - x1);
-        int steps = Math.max(1, (int) distance(x1, y1, x2, y2));
-        int length = Math.max(6, size * 2);   // knife is longer than it is wide
-        int width = Math.max(1, size / 5);   // very thin
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dist = distance(x1, y1, x2, y2);
+
+        if (dist == 0) return;
+//Dir
+        double angle = Math.atan2(dy, dx);
+
+//smooth
+        angle = lerp(prevAngle, angle, 0.25);
+        prevAngle = angle;
+
+        //pressure ---
+        float speedFactor = Math.min(1f, (float) dist / 20f);
+
+        int baseLength = Math.max(6, size * 2);
+        int baseWidth = Math.max(1, size / 5);
+
+        // Slower = thicker, Faster = thinner
+        int dynamicWidth = (int)(baseWidth * (1.8f - speedFactor));
+        int dynamicLength = (int)(baseLength * (1.2f - speedFactor * 0.4f));
+
+        //Reduce stamping density
+        int steps = Math.max(1, (int)(dist / 2));
 
         Graphics2D g2c = (Graphics2D) g2.create();
         g2c.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        g2c.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
+
         for (int i = 0; i <= steps; i++)
         {
             float t = (float) i / steps;
-            int px = (int) (x1 + t * (x2 - x1));
-            int py = (int) (y1 + t * (y2 - y1));
+            int px = (int) (x1 + t * dx);
+            int py = (int) (y1 + t * dy);
+
+            //Taper
+            float taper = 1.0f - Math.abs(0.5f - t) * 2;
+            int w = Math.max(1, (int)(dynamicWidth * (0.6f + taper)));
+            int l = Math.max(2, (int)(dynamicLength * (0.8f + taper * 0.4f)));
+
+            //Controlled jitter
+            double jitter = (Math.random() - 0.5) * 0.15;
 
             AffineTransform at = AffineTransform.getTranslateInstance(px, py);
-            at.rotate(angle);
+            at.rotate(angle + jitter);
             g2c.setTransform(at);
 
-            g2c.fillRect(-length / 2, -width / 2, length, width);
+            //Drag offset
+            int offset = w / 2;
+
+            g2c.fillRect(-l / 2, -offset, l, w);
         }
+
         g2c.dispose();
     }
 
+    private double lerp(double a, double b, double t)
+    {
+        return a + (b - a) * t;
+    }
 //Sprayyyy!
     private void drawSpray(Graphics2D g2, int cx, int cy, int size)
     {

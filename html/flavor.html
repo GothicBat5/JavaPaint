@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Select Flavor</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg,#6ec1a6,#9a6ea6);
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    background: #d9d9e3;
+    padding: 40px;
+    border-radius: 40px;
+    width: 420px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 18px 0;
+    cursor: pointer;
+}
+
+.flavor {
+    flex: 1;
+    padding: 16px;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.check {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    margin-left: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: white;
+    opacity: 0.3;
+    transition: 0.2s;
+}
+
+.option.selected .check {
+    opacity: 1;
+}
+
+/* gradients */
+.bubble { background: linear-gradient(90deg,#2ec4b6,#5e86d6); }
+.blueberry { background: linear-gradient(90deg,#4da3d9,#5b78d6); }
+.purple { background: linear-gradient(90deg,#7b5ed6,#a79bdd); }
+.raspberry { background: linear-gradient(90deg,#e06b6b,#b34fd1); }
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Select a flavor</h1>
+
+    <div class="option">
+        <div class="flavor bubble">Bubble Gum</div>
+        <div class="check">✓</div>
+    </div>
+
+    <div class="option">
+        <div class="flavor blueberry">Blueberry</div>
+        <div class="check">✓</div>
+    </div>
+
+    <div class="option">
+        <div class="flavor purple">Purple Jam</div>
+        <div class="check">✓</div>
+    </div>
+
+    <div class="option selected">
+        <div class="flavor raspberry">Raspberry</div>
+        <div class="check">✓</div>
+    </div>
+</div>
+
+<script>
+const options = document.querySelectorAll(".option");
+
+options.forEach(option => {
+    option.addEventListener("click", () => {
+        options.forEach(o => o.classList.remove("selected"));
+        option.classList.add("selected");
+    });
+});
+</script>
+
+</body>
+</html>

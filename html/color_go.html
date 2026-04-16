@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Glow Trail Effect</title>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        background: radial-gradient(circle at center, magenta, purple);
+    }
+
+    .glow {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        pointer-events: none;
+
+        background: radial-gradient(circle, 
+                    rgba(255,105,180,0.8), 
+                    rgba(255,105,180,0.0) 70%);
+
+        filter: blur(40px);
+        transform: translate(-50%, -50%);
+    }
+</style>
+</head>
+
+<body>
+
+<script>
+    const trails = [];
+    const trailCount = 8; //trail
+
+    for (let i = 0; i < trailCount; i++)
+    {
+        const div = document.createElement('div');
+        div.classList.add('glow');
+        document.body.appendChild(div);
+        trails.push({ el: div, x: 0, y: 0 });
+    }
+
+    let mouseX = 0;
+    let mouseY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function animate() 
+    {
+        let x = mouseX;
+        let y = mouseY;
+
+        trails.forEach((trail, index) => {
+
+            trail.x += (x - trail.x) * 0.2;
+            trail.y += (y - trail.y) * 0.2;
+
+            trail.el.style.left = trail.x + 'px';
+            trail.el.style.top = trail.y + 'px';
+
+            //next trail follows previous one
+            x = trail.x;
+            y = trail.y;
+
+            //fade effect
+            trail.el.style.opacity = 1 - index / trailCount;
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>

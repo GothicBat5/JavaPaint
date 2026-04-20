@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Arcade Pixel Trail</title>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        cursor: none;
+        background: black;
+    }
+
+    .pixel {
+        position: absolute;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+    }
+</style>
+</head>
+
+<body>
+
+<script>
+    const trail = [];
+    const particles = [];
+
+    const trailCount = 30;
+
+    let mouseX = 0;
+    let mouseY = 0;
+
+    let hue = 0;
+    let currentHue = 0;
+    let rainbowMode = true;
+
+    let bgX = 0;
+    let bgY = 0;
+
+    //Create trail
+    for (let i = 0; i < trailCount; i++) {
+        const div = document.createElement('div');
+        div.classList.add('pixel');
+        document.body.appendChild(div);
+
+        trail.push({ el: div, x: 0, y: 0 });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    //color change + explosion
+    document.addEventListener('click', () => {
+        hue = Math.random() * 360;
+        createExplosion(mouseX, mouseY);
+    });
+
+    //oggle rainbow mode (press R)
+    document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'r') 
+        {
+            rainbowMode = !rainbowMode;
+        }
+    });
+
+    function createExplosion(x, y) {
+
+        for (let i = 0; i < 40; i++) 
+        {
+
+            const div = document.createElement('div');
+            div.classList.add('pixel');
+            document.body.appendChild(div);
+
+            particles.push({
+                el: div,
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                life: 1
+            });
+        }
+    }
+
+    function updateBackground() {
+        bgX += (mouseX - bgX) * 0.1;
+        bgY += (mouseY - bgY) * 0.1;
+
+        currentHue += (hue - currentHue) * 0.05;
+
+        const color1 = `hsl(${currentHue}, 100%, 20%)`;
+        const color2 = `hsl(${(currentHue + 60) % 360}, 100%, 10%)`;
+
+        document.body.style.background = `
+            radial-gradient(circle at ${bgX}px ${bgY}px,
+            ${color1},
+            ${color2},
+            black 70%)`;
+    }
+
+    function animate() {
+        let x = mouseX;
+        let y = mouseY;
+
+        //FIREBALL TRAIL
+        trail.forEach((p, i) => {
+            p.x += (x - p.x) * 0.35;
+            p.y += (y - p.y) * 0.35;
+
+            const grid = 8;
+            const snapX = Math.round(p.x / grid) * grid;
+            const snapY = Math.round(p.y / grid) * grid;
+
+            p.el.style.left = snapX + 'px';
+            p.el.style.top = snapY + 'px';
+
+            //size (big > small)
+            const size = 20 - (i * 0.6);
+            p.el.style.width = size + 'px';
+            p.el.style.height = size + 'px';
+
+            //shape variation
+            if (i % 3 === 0) 
+            {
+                p.el.style.borderRadius = "0%";
+            } 
+
+            else if (i % 3 === 1) 
+            {
+                p.el.style.borderRadius = "50%";
+            } 
+
+            else 
+            {
+                p.el.style.borderRadius = "20%";
+            }
+
+            //color
+            let colorHue = rainbowMode ? (hue + i * 10) % 360 : hue;
+            p.el.style.backgroundColor = `hsl(${colorHue}, 100%, 60%)`;
+
+            p.el.style.opacity = 1 - i / trailCount;
+
+            x = p.x;
+            y = p.y;
+        });
+
+        //EXPLOSION PARTICLES
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const part = particles[i];
+
+            part.x += part.vx;
+            part.y += part.vy;
+            part.life -= 0.02;
+
+            part.el.style.left = part.x + 'px';
+            part.el.style.top = part.y + 'px';
+
+            part.el.style.width = "6px";
+            part.el.style.height = "6px";
+
+            part.el.style.backgroundColor = `hsl(${hue}, 100%, 60%)`;
+            part.el.style.opacity = part.life;
+
+            if (part.life <= 0) 
+            {
+                part.el.remove();
+                particles.splice(i, 1);
+            }
+        }
+
+        //BACKGROUND EFFECT
+        updateBackground();
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>

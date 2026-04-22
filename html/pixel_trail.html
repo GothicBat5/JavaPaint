@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang = "en">
 <head>
-<meta charset="UTF-8">
-<title>Arcade Pixel Trail</title>
+<meta charset = "UTF-8">
+<title>Arcade Pixel Trail Blah Blah</title>
 
 <style>
     body {
@@ -40,7 +40,8 @@
     let bgY = 0;
 
     //Create trail
-    for (let i = 0; i < trailCount; i++) {
+    for (let i = 0; i < trailCount; i++) 
+    {
         const div = document.createElement('div');
         div.classList.add('pixel');
         document.body.appendChild(div);
@@ -87,7 +88,8 @@
         }
     }
 
-    function updateBackground() {
+    function updateBackground() 
+    {
         bgX += (mouseX - bgX) * 0.1;
         bgY += (mouseY - bgY) * 0.1;
 
@@ -103,7 +105,8 @@
             black 70%)`;
     }
 
-    function animate() {
+    function animate() 
+    {
         let x = mouseX;
         let y = mouseY;
 
@@ -151,7 +154,8 @@
         });
 
         //EXPLOSION PARTICLES
-        for (let i = particles.length - 1; i >= 0; i--) {
+        for (let i = particles.length - 1; i >= 0; i--) 
+        {
             const part = particles[i];
 
             part.x += part.vx;

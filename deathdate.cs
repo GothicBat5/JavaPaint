@@ -4,88 +4,182 @@ namespace RhinoS
 {
     public class Program
     {
-        public static void Main(string[] args)
+        static readonly Random Rng = new Random();
+
+        static DateTime GetBirthday()
         {
-            Console.WriteLine("Year must be = [YYYY/1940]\nMonth only [1 to 12]");
-            Console.WriteLine("What is your fate?");
-            Console.WriteLine("This program is created by Chloe Nazz\nReal? idk\n");
-            int month = ReadInt("Month: ", 1, 12);
+            int month = ReadInt("Month [1-12]]: ", 1, 12);
             int year = ReadYear("Year: ");
             int day = ReadDay(month, year);
+            return new DateTime(year, month, day);
+        }
 
-            DateTime birthday = new DateTime(year, month, day);
+        static void PrintHeader()
+        {
+            Console.WriteLine("========================================");
+            Console.WriteLine("     created by Chloe Jane  ");
+            Console.WriteLine("========================================");
+            Console.WriteLine();
+        }
 
-            Console.WriteLine($"\nYour birthday is {birthday:MMMM d, yyyy}");
-            Console.WriteLine("Press Enter to continue...");
+        static void ShowBirthdayInfo(DateTime birthday)
+        {
+            DateTime today = DateTime.Today;
+
+            Console.WriteLine();
+            Console.WriteLine($"  Your birthday: {birthday:MMMM d, yyyy}");
+
+            if (birthday <= today)
+            {
+                int age = CalculateAge(birthday, today);
+                Console.WriteLine($"  Age: {age} year{(age == 1 ? "" : "s")} old");
+                ShowNextBirthday(birthday, today);
+            }
+            else
+            {
+                int daysUntil = (birthday - today).Days;
+                Console.WriteLine($"  Arrives in: {daysUntil} day{(daysUntil == 1 ? "" : "s")} from today");
+            }
+        }
+
+        static void ShowNextBirthday(DateTime birthday, DateTime today)
+        {
+            DateTime next = NextBirthdayFrom(birthday, today);
+            int daysLeft = (next - today).Days;
+
+            if (daysLeft == 0)
+            {
+                Console.WriteLine("  Today is your birthday!");
+            }
+            else
+            {
+                Console.WriteLine($"  Next birthday: {next:MMMM d, yyyy} ({daysLeft} day{(daysLeft == 1 ? "" : "s")} away)");
+            }
+        }
+
+        static void ShowFate(DateTime birthday)
+        {
+            Console.WriteLine();
+            Console.Write("  Press Enter...\n");
             Console.ReadLine();
 
             DateTime today = DateTime.Today;
             DateTime startDate = birthday > today ? birthday : today;
+            DateTime fateDate = GenerateFutureDate(startDate, startDate.AddYears(50));
 
-            DateTime randomDate = GenerateFutureDate(startDate, startDate.AddYears(50));
-
-            Console.WriteLine($"\nDeath date: {randomDate:MMMM d, yyyy}");
-            Console.WriteLine("\n** Done ;-))   **\nLive your life hehe\nWhile ur still alive");
+            Console.WriteLine($"  Death date: {fateDate:MMMM d, yyyy}");
+            Console.WriteLine();
         }
+
+        static bool AskPlayAgain()
+        {
+            Console.Write("  Play again? (y/n): ");
+            string answer = (Console.ReadLine() ?? "").Trim().ToLower();
+            return answer == "y" || answer == "yes";
+        }
+
 
         static int ReadInt(string prompt, int min, int max)
         {
             while (true)
             {
-                Console.Write(prompt);
-                string input = Console.ReadLine();
+                Console.Write($"  {prompt}");
+                string input = Console.ReadLine() ?? "";
+                
+                //C
+                if (int.TryParse(input.Trim(), out int value) && value >= min && value <= max)
+                return value;
+                //C 
 
-                if (int.TryParse(input, out int value) && value >= min && value <= max)
-                {
-                    return value; 
-                }
-                Console.WriteLine("Invalid Month.\n");
+                Console.WriteLine($"  Invalid. Enter a number between {min} and {max}.\n");
             }
         }
 
         static int ReadYear(string prompt)
         {
+            int currentYear = DateTime.Today.Year;
             while (true)
             {
-                Console.Write(prompt);
-                string input = Console.ReadLine();
+                Console.Write($"  {prompt}");
+                string input = (Console.ReadLine() ?? "").Trim();
 
-                if (input.Length == 4 && int.TryParse(input, out int year))
-                {
-                    return year;
-                }
+                //C
+                if (input.Length == 4 && int.TryParse(input, out int year) && year >= 1900 && year <= currentYear)
+                return year;
+                //C
 
-                Console.WriteLine("Invalid Year.\n");
+                Console.WriteLine($"  Invalid Input.\n");
             }
         }
 
         static int ReadDay(int month, int year)
         {
+            int maxDay = DateTime.DaysInMonth(year, month);
+            
             while (true)
             {
-                Console.Write("Day: ");
-                string input = Console.ReadLine();
+                Console.Write($"  Day (1-{maxDay}): ");
+                string input = (Console.ReadLine() ?? "").Trim();
 
-                if (!int.TryParse(input, out int day))
-                {
-                    Console.WriteLine("Invalid Input \n");
-                    continue;
-                }
+                //C
+                if (int.TryParse(input, out int day) && day >= 1 && day <= maxDay)
+                return day;
+                //C
 
-                if (DateTime.TryParse($"{year}-{month}-{day}", out _))
-                {
-                    return day; 
-                }
-                Console.WriteLine("Invalid Day.\n");
+                Console.WriteLine($"  Invalid Input.\n");
             }
         }
 
+
         static DateTime GenerateFutureDate(DateTime start, DateTime end)
         {
-            Random rng = new Random();
+            
+            if (start >= end)
+            {
+                return start;
+            }
+            
             int range = (end - start).Days;
-            int randomDays = rng.Next(0, range + 1);
-            return start.AddDays(randomDays);
+            return start.AddDays(Rng.Next(0, range + 1));
+        }
+
+        static int CalculateAge(DateTime birthday, DateTime today)
+        {
+            
+            int age = today.Year - birthday.Year;
+            if (today < birthday.AddYears(age)) age--;
+            return age;
+        }
+
+        static DateTime NextBirthdayFrom(DateTime birthday, DateTime today)
+        {
+            
+            DateTime next = new DateTime(today.Year, birthday.Month, birthday.Day);
+            
+            if (next < today) next = next.AddYears(1);
+            {
+                return next;
+            }
+        }
+        
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.Clear();
+                PrintHeader();
+
+                DateTime birthday = GetBirthday();
+                ShowBirthdayInfo(birthday);
+                ShowFate(birthday);
+
+                if(!AskPlayAgain())
+                {
+                    break;
+                }
+            }
+
+            Console.WriteLine("\nProgram Ended.\n");
         }
     }
 }

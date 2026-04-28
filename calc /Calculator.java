@@ -177,39 +177,39 @@ public class Calculator extends JFrame implements ActionListener
         g.weightx = 1;
         g.weighty = 1;
 
-        addBtn(panel, g, "C",   0, 0, 1, 1, Pallete.BTN_CLEAR,    Pallete.NEON_PINK,    Pallete.NEON_PINK);
+        addBtn(panel, g, "C", 0, 0, 1, 1, Pallete.BTN_CLEAR, Pallete.NEON_PINK, Pallete.NEON_PINK);
 
-        addBtn(panel, g, "÷",   0, 1, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET,  Pallete.NEON_VIOLET);
+        addBtn(panel, g, "÷", 0, 1, 1, 1, Pallete.BTN_OPERATOR,Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
 
-        addBtn(panel, g, "×",0, 2, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET,  Pallete.NEON_VIOLET);
+        addBtn(panel, g, "×", 0, 2, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
 
-        addBtn(panel, g,"−",0, 3, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET,  Pallete.NEON_VIOLET);
+        addBtn(panel, g,"−", 0, 3, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
 
-        addBtn(panel, g,"7",1, 0, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"7", 1, 0, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"8",1, 1, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"8", 1, 1, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"9",1, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"9", 1, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"+",1, 3, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
+        addBtn(panel, g,"+", 1, 3, 1, 1, Pallete.BTN_OPERATOR, Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
 
-        addBtn(panel, g,"4",2, 0, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"4", 2, 0, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"5",2, 1, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"5", 2, 1, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"6",2, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"6", 2, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"=",2, 3, 2, 1, Pallete.BTN_EQUAL, Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
+        addBtn(panel, g,"=", 2, 3, 2, 1, Pallete.BTN_EQUAL, Pallete.NEON_VIOLET, Pallete.NEON_VIOLET);
 
-        addBtn(panel, g,"1",3, 0, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"1", 3, 0, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"2",3, 1, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"2", 3, 1, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"3",3, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"3", 3, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,"0",4, 0, 1, 2, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,"0", 4, 0, 1, 2, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
-        addBtn(panel, g,".",4, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
+        addBtn(panel, g,".", 4, 2, 1, 1, Pallete.BTN_DIGIT, null, Pallete.NEON_TEAL);
 
         return panel;
     }
@@ -287,6 +287,7 @@ public class Calculator extends JFrame implements ActionListener
                 justEvaluated = false;
 
                 expression = expression.stripTrailing();
+                
                 if (!expression.isEmpty() && "+-*/".contains(String.valueOf(expression.charAt(expression.length() - 1))))
                 {
                     expression = expression.substring(0, expression.length() - 2);
@@ -321,7 +322,7 @@ public class Calculator extends JFrame implements ActionListener
         {
             resultLabel.setForeground(Pallete.NEON_PINK);
             resultLabel.setText("DIV/0 ERROR");
-            expression    = "";
+            expression = "";
             justEvaluated = false;
         }
         catch (Exception ex)
@@ -352,7 +353,7 @@ public class Calculator extends JFrame implements ActionListener
             nums.add(Double.parseDouble(raw[i + 1]));
         }
 
-        for (int i = 0; i < ops.size(); )
+        for (int i = 0; i < ops.size();)
         {
             String op = ops.get(i);
 

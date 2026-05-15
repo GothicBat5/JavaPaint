@@ -43,3 +43,26 @@ import java.beans.PropertyChangeListener; //Detects and responds to property val
 import java.lang.management.ManagementFactory; //Accesses JVM information like memory and CPU usage.
 
 import java.util.regex.Pattern; //Defines regular expression patterns for searching or validating text.
+
+//SECURITY IMPORTS
+import java.security.MessageDigest;
+
+import java.security.SecureRandom;
+
+import java.security.KeyPair;
+
+import java.security.KeyPairGenerator;
+
+import java.security.PrivateKey;
+
+import java.security.PublicKey;
+
+import java.security.Signature;
+
+//CRYPTO
+import javax.crypto.Cipher;
+
+import javax.crypto.KeyGenerator;
+
+import javax.crypto.SecretKey;
+

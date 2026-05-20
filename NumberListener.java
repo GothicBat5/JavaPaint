@@ -1,75 +1,116 @@
 import java.util.Scanner;
 
-public class NumberListener 
+public class NumberListener
 {
-    public static void main(String[] args)
+    private static void startProgram()
     {
         Scanner scan = new Scanner(System.in);
-        
-        System.out.println("Number: Prime, Odd, Even, \n");
-        
-        while(true) 
+
+        printIntro();
+
+        while(true)
         {
             System.out.print("Enter a number: ");
             String input = scan.nextLine();
-            
-            if(input.equalsIgnoreCase("exit"))
+
+            if(isExitCommand(input))
             {
-                System.out.println("\nProgram Ended. Thank you.");
+                endProgram();
                 break;
             }
-            
-            try {
-                
-                int num = Integer.parseInt(input);
-                
-                if(isPrime(num))
-                {
-                    System.out.println(num+" is a prime number.\n");
-                }
-                else
-                {
-                    if(num % 2 == 0)
-                    {
-                        System.out.println(num+" is a even number.\n");
-                    }
-                    else
-                    {
-                        System.out.println(num+" is a odd number.\n");
-                    }
-                }
-            }
-            catch(NumberFormatException e)
-            {
-                System.out.println("Invalid Input!");
-            }
+
+            processInput(input);
         }
+
         scan.close();
     }
-    
-    private static boolean isPrime(int np)
+
+    private static void printIntro()
     {
-        if(np <= 1)
+        System.out.println("Number Analyzer");
+        System.out.println("Prime, Odd, or Even.");
+        System.out.println("Type exit to end.\n");
+    }
+
+    private static boolean isExitCommand(String input)
+    {
+        return input.equalsIgnoreCase("exit");
+    }
+
+    private static void processInput(String input)
+    {
+        try
+        {
+            long number = Long.parseLong(input);
+
+            displayResult(number);
+        }
+        catch(NumberFormatException e)
+        {
+            System.out.println("Invalid input!\n");
+        }
+    }
+
+    private static void displayResult(long number)
+    {
+        StringBuilder result = new StringBuilder();
+
+        result.append(number).append(" is:\n");
+
+        if(isPrime(number))
+        {
+            result.append("- Prime\n");
+        }
+
+        if(number % 2 == 0)
+        {
+            result.append("- Even\n");
+        }
+        else
+        {
+            result.append("- Odd\n");
+        }
+
+        System.out.println(result);
+    }
+
+    private static boolean isPrime(long number)
+    {
+        if(number <= 1)
         {
             return false;
         }
-        if(np == 2)
+
+        if(number == 2)
         {
             return true;
         }
-        if(np % 2 == 0)
+
+        if(number % 2 == 0)
         {
             return false;
         }
-        
-        for(int i = 3; i <= Math.sqrt(np); i += 2)
+
+        long limit = (long)Math.sqrt(number);
+
+        for(long i = 3; i <= limit; i += 2)
         {
-            if(np % i == 0)
+            if(number % i == 0)
             {
                 return false;
             }
         }
-        return true; 
+
+        return true;
+    }
+
+    private static void endProgram()
+    {
+        System.out.println("\nProgram Ended. Thank you.");
+    }
+    
+    public static void main(String[] args)
+    {
+        startProgram();
     }
 }
-

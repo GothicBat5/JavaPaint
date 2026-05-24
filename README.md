@@ -6,6 +6,7 @@ This is now a fully development world of Java programming.
 Update some: April 6, 2026 + some new brushes.
 Knife kinda sucks, I'm too lazy to fix now wahaha
 
+This editor is I'm really proud, almost better than the paint! and that saying something >
 Check: image / editor-pixel-src for the image editing program
 Fully functional image editing program with effects
 

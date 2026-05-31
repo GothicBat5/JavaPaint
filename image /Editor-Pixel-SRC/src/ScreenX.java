@@ -19,10 +19,10 @@ public class ScreenX extends JFrame
     {
         List<Layer> layers;
         int activeIndex;
-        
-        HistoryEntry(List<Layer> l, int i) 
-        { 
-            layers = l; activeIndex = i; 
+
+        HistoryEntry(List<Layer> l, int i)
+        {
+            layers = l; activeIndex = i;
         }
     }
 
@@ -45,7 +45,7 @@ public class ScreenX extends JFrame
     private final JLabel imageLabel = new JLabel(placeholderIcon());
 
     private ColorGradeWindow colorGradeWindow = null;
-    private HistogramWindow  histogramWindow  = null;
+    private HistogramWindow histogramWindow  = null;
 
     public ScreenX()
     {
@@ -93,12 +93,12 @@ public class ScreenX extends JFrame
         int sh = (int)(composite.getHeight() * zoomFactor);
         imageLabel.setIcon(new ImageIcon(composite.getScaledInstance(sw, sh, Image.SCALE_FAST)));
         layerPanel.rebuildList();
-        
+
         if (histogramWindow != null && histogramWindow.isVisible())
         {
             histogramWindow.update(composite);
         }
-        
+
         status(composite.getWidth() + " × " + composite.getHeight() + " px  |  Zoom: "
                 + String.format("%.0f%%", zoomFactor * 100)
                 + "  |  Layers: " + stack.getLayers().size()
@@ -179,14 +179,14 @@ public class ScreenX extends JFrame
         addItem(layerMenu, "Duplicate Layer", -1, e -> duplicateActiveLayer());
         addItem(layerMenu, "Delete Layer", -1, e -> deleteActiveLayer());
         layerMenu.addSeparator();
-        addItem(layerMenu, "Move Layer Up", -1, e -> { 
-            stack.moveUp(stack.getActiveIndex());   
+        addItem(layerMenu, "Move Layer Up", -1, e -> {
+            stack.moveUp(stack.getActiveIndex());
             layerPanel.rebuildList(); });
-        
-        addItem(layerMenu, "Move Layer Down", -1, e -> { 
+
+        addItem(layerMenu, "Move Layer Down", -1, e -> {
             stack.moveDown(stack.getActiveIndex()); layerPanel.rebuildList(); });
-            layerMenu.addSeparator();
-        
+        layerMenu.addSeparator();
+
         addItem(layerMenu, "Flatten to Single Layer", -1, e -> flattenLayers());
 
         JMenu fx = new JMenu("Effects");
@@ -379,12 +379,12 @@ public class ScreenX extends JFrame
 
     private void saveImage()
     {
-        if (stack.isEmpty()) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (stack.isEmpty())
+        {
+            warnNoImage();
+            return;
         }
-        
+
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
                 "Image files (png, jpg, gif, bmp)", "png", "jpg", "jpeg", "gif", "bmp"));
@@ -398,10 +398,10 @@ public class ScreenX extends JFrame
     private void duplicateActiveLayer()
     {
         Layer active = stack.getActive();
-        if (active == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (active == null)
+        {
+            warnNoImage();
+            return;
         }
         saveUndoSnapshot();
         stack.insertAboveActive(active.deepCopy());
@@ -438,7 +438,7 @@ public class ScreenX extends JFrame
         if (stack.isEmpty()) return;
         Dimension pane = scrollPane.getViewport().getSize();
         zoomFactor = Math.min(pane.getWidth()  / (double) stack.canvasWidth(),
-                              pane.getHeight() / (double) stack.canvasHeight());
+                pane.getHeight() / (double) stack.canvasHeight());
         onStackChanged();
     }
 
@@ -459,13 +459,13 @@ public class ScreenX extends JFrame
 
     private void enterCropMode()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            if (cropBtn != null) cropBtn.setSelected(false); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            if (cropBtn != null) cropBtn.setSelected(false);
+            return;
         }
-        
+
         cropMode = true;
         cropCanvas.setImage(stack.composite(), zoomFactor);
         ((CardLayout) centerStack.getLayout()).show(centerStack, "crop");
@@ -497,7 +497,7 @@ public class ScreenX extends JFrame
             int cx = Math.min(r.x, lw), cy = Math.min(r.y, lh);
             int cw = Math.min(r.width,  lw - cx);
             int ch = Math.min(r.height, lh - cy);
-            
+
             if (cw <= 0 || ch <= 0) continue;
             BufferedImage sub  = layer.image.getSubimage(cx, cy, cw, ch);
             BufferedImage copy = new BufferedImage(cw, ch, BufferedImage.TYPE_INT_ARGB);
@@ -510,63 +510,63 @@ public class ScreenX extends JFrame
 
     private void doBrightnessContrast()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
-        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Brightness / Contrast", activeImage(),
-                List.of(new SliderPreviewDialog.Param("Brightness", -255, 255, 0),
-                        new SliderPreviewDialog.Param("Contrast",   -255, 255, 0)),
+        SliderPreview dlg = new SliderPreview(this, "Brightness / Contrast", activeImage(),
+                List.of(new SliderPreview.Param("Brightness", -255, 255, 0),
+                        new SliderPreview.Param("Contrast",   -255, 255, 0)),
                 v -> Effex.brightnessContrast(activeImage(), v[0], v[1]));
         dlg.setVisible(true);
-        if (dlg.isConfirmed()) 
-        { 
-            int[] v = dlg.values(); pushEffect(Effex.brightnessContrast(activeImage(), v[0], v[1])); 
+        if (dlg.isConfirmed())
+        {
+            int[] v = dlg.values(); pushEffect(Effex.brightnessContrast(activeImage(), v[0], v[1]));
         }
     }
 
     private void doBlur()
     {
-        if (activeImage() == null) 
+        if (activeImage() == null)
         {
-            warnNoImage(); 
-            return; 
+            warnNoImage();
+            return;
         }
-        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Blur", activeImage(),
-                List.of(new SliderPreviewDialog.Param("Radius", 1, 15, 2)),
+        SliderPreview dlg = new SliderPreview(this, "Blur", activeImage(),
+                List.of(new SliderPreview.Param("Radius", 1, 15, 2)),
                 v -> Effex.blur(activeImage(), v[0]));
         dlg.setVisible(true);
-        
+
         if (dlg.isConfirmed()) pushEffect(Effex.blur(activeImage(), dlg.values()[0]));
     }
 
     private void doPixelate()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
-        
-        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Pixelate", activeImage(),
-                List.of(new SliderPreviewDialog.Param("Block Size", 2, 80, 10)),
+
+        SliderPreview dlg = new SliderPreview(this, "Pixelate", activeImage(),
+                List.of(new SliderPreview.Param("Block Size", 2, 80, 10)),
                 v -> Effex.pixelate(activeImage(), v[0]));
         dlg.setVisible(true);
-        
+
         if (dlg.isConfirmed()) pushEffect(Effex.pixelate(activeImage(), dlg.values()[0]));
     }
 
     private void doPosterize()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
-        
-        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Posterize", activeImage(),
-                List.of(new SliderPreviewDialog.Param("Levels", 2, 16, 4)),
+
+        SliderPreview dlg = new SliderPreview(this, "Posterize", activeImage(),
+                List.of(new SliderPreview.Param("Levels", 2, 16, 4)),
                 v -> Effex.posterize(activeImage(), v[0]));
         dlg.setVisible(true);
         if (dlg.isConfirmed()) pushEffect(Effex.posterize(activeImage(), dlg.values()[0]));
@@ -574,14 +574,14 @@ public class ScreenX extends JFrame
 
     private void doSolarize()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
-        
-        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Solarize", activeImage(),
-                List.of(new SliderPreviewDialog.Param("Threshold", 0, 255, 128)),
+
+        SliderPreview dlg = new SliderPreview(this, "Solarize", activeImage(),
+                List.of(new SliderPreview.Param("Threshold", 0, 255, 128)),
                 v -> Effex.solarize(activeImage(), v[0]));
         dlg.setVisible(true);
         if (dlg.isConfirmed()) pushEffect(Effex.solarize(activeImage(), dlg.values()[0]));
@@ -589,30 +589,30 @@ public class ScreenX extends JFrame
 
     private void doVignette()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
-        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Vignette", activeImage(),
-                List.of(new SliderPreviewDialog.Param("Strength", 0, 100, 85)),
+        SliderPreview dlg = new SliderPreview(this, "Vignette", activeImage(),
+                List.of(new SliderPreview.Param("Strength", 0, 100, 85)),
                 v -> Effex.vignette(activeImage(), v[0] / 100.0f));
         dlg.setVisible(true);
-        
+
         if (dlg.isConfirmed()) pushEffect(Effex.vignette(activeImage(), dlg.values()[0] / 100.0f));
     }
 
     private void openColorGradeWindow()
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
-        if (colorGradeWindow != null && colorGradeWindow.isVisible()) 
-        { 
-            colorGradeWindow.toFront(); 
-            return; 
+        if (colorGradeWindow != null && colorGradeWindow.isVisible())
+        {
+            colorGradeWindow.toFront();
+            return;
         }
         final BufferedImage snapshot = activeImage();
         colorGradeWindow = new ColorGradeWindow(snapshot,
@@ -632,10 +632,10 @@ public class ScreenX extends JFrame
 
     private void applyIfLoaded(Runnable r)
     {
-        if (activeImage() == null) 
-        { 
-            warnNoImage(); 
-            return; 
+        if (activeImage() == null)
+        {
+            warnNoImage();
+            return;
         }
         r.run();
     }
@@ -671,9 +671,9 @@ public class ScreenX extends JFrame
         JOptionPane.showMessageDialog(this, "No image is open.", "ScreenX", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void status(String msg) 
-    { 
-        statusLabel.setText(msg); 
+    private void status(String msg)
+    {
+        statusLabel.setText(msg);
     }
 
     private static BufferedImage toARGB(BufferedImage src)

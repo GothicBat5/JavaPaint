@@ -1,13 +1,20 @@
 package candy_rush;
 
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 public class Main
 {
     public static void main(String[] args)
     {
-        SwingUtilities.invokeLater(ScreenX::new);
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception ignored) 
+        {
+          // File manager:: Native OS opne ??      
+        }
 
-        System.out.println("\nProgram Started.");
+        SwingUtilities.invokeLater(ScreenX::new);
     }
 }

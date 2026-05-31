@@ -15,10 +15,10 @@
 #define ID_EDIT_UNDO 3001
 #define ID_EDIT_CUT 3002
 #define ID_EDIT_COPY 3003
-#define ID_EDIT_PASTE   3004
-#define ID_EDIT_SELALL  3005
-#define ID_VIEW_FONT    4001
-#define ID_HELP_ABOUT   5001
+#define ID_EDIT_PASTE 3004
+#define ID_EDIT_SELALL 3005
+#define ID_VIEW_FONT 4001
+#define ID_HELP_ABOUT 5001
 
 HWND hEdit, hStatus;
 HFONT hFont;
@@ -46,22 +46,21 @@ void UpdateStatus()
     int words = 0;
     bool inWord = false;
   
-    for (char c : buf) {
+    for (char c : buf) 
+    {
         if (isspace((unsigned char)c)) inWord = false;
         else if (!inWord) { inWord = true; ++words; }
     }
 
     char status[128];
-    wsprintfA(status, "  Ln %d, Col %d     Words: %d     Chars: %d",
-              line + 1, col + 1, words, len);
+    wsprintfA(status, "  Ln %d, Col %d     Words: %d     Chars: %d", line + 1, col + 1, words, len);
     SetWindowTextA(hStatus, status);
 }
 
 bool AskSaveIfDirty(HWND hwnd)
 {
     if (!isDirty) return true;
-    int r = MessageBoxA(hwnd, "Save changes?", "NoteWin",
-                        MB_YESNOCANCEL | MB_ICONQUESTION);
+    int r = MessageBoxA(hwnd, "Save changes?", "NoteWin",  MB_YESNOCANCEL | MB_ICONQUESTION);
     if (r == IDCANCEL) return false;
     if (r == IDNO) return true;
     SendMessage(hwnd, WM_COMMAND, ID_FILE_SAVE, 0);
@@ -91,7 +90,12 @@ void FileOpen(HWND hwnd)
     if (!GetOpenFileNameA(&ofn)) return;
 
     std::ifstream fs(file);
-    if (!fs) { MessageBoxA(hwnd, "Cannot open file.", "Error", MB_ICONERROR); return; }
+    if (!fs) 
+    { 
+        MessageBoxA(hwnd, "Cannot open file.", "Error", MB_ICONERROR); 
+        return; 
+    }
+    
     std::ostringstream ss; ss << fs.rdbuf();
     std::string content = ss.str();
     SetWindowTextA(hEdit, content.c_str());
@@ -103,10 +107,13 @@ void FileOpen(HWND hwnd)
 
 void FileSave(HWND hwnd, bool saveAs = false)
 {
-    if (saveAs || currentFile[0] == '\0') {
+    if (saveAs || currentFile[0] == '\0') 
+    {
         OPENFILENAMEA ofn = {};
         char file[MAX_PATH] = "";
+        
         if (currentFile[0]) lstrcpyA(file, currentFile);
+        
         ofn.lStructSize = sizeof(ofn);
         ofn.hwndOwner = hwnd;
         ofn.lpstrFilter = "Text Files\0*.txt\0All Files\0*.*\0";
@@ -114,6 +121,7 @@ void FileSave(HWND hwnd, bool saveAs = false)
         ofn.nMaxFile = MAX_PATH;
         ofn.lpstrDefExt = "txt";
         ofn.Flags = OFN_OVERWRITEPROMPT;
+        
         if (!GetSaveFileNameA(&ofn)) return;
         lstrcpyA(currentFile, file);
     }
@@ -121,7 +129,13 @@ void FileSave(HWND hwnd, bool saveAs = false)
     std::string buf(len + 1, '\0');
     GetWindowTextA(hEdit, buf.data(), len + 1);
     std::ofstream fs(currentFile);
-    if (!fs) { MessageBoxA(hwnd, "Cannot write file.", "Error", MB_ICONERROR); return; }
+    
+    if (!fs) 
+    { 
+        MessageBoxA(hwnd, "Cannot write file.", "Error", MB_ICONERROR); 
+        return; 
+    }
+    
     fs << buf.c_str();
     isDirty = false;
     UpdateTitle(hwnd);
@@ -135,6 +149,7 @@ void ChooseEditorFont(HWND hwnd)
         lf.lfHeight = -14;
         lstrcpyA(lf.lfFaceName, "Consolas");
     }
+    
     CHOOSEFONT cf = {};
     cf.lStructSize = sizeof(cf);
     cf.hwndOwner = hwnd;
@@ -143,6 +158,7 @@ void ChooseEditorFont(HWND hwnd)
     if (!ChooseFont(&cf)) return;
     HFONT newFont = CreateFontIndirect(&lf);
     SendMessage(hEdit, WM_SETFONT, (WPARAM)newFont, TRUE);
+    
     if (hFont) DeleteObject(hFont);
     hFont = newFont;
 }

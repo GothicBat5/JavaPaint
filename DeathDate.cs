@@ -2,7 +2,7 @@ using System;
 
 namespace RhinoS
 {
-    public class Program
+    public class DeathDate
     {
         static readonly Random Rng = new Random();
 

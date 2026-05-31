@@ -19,9 +19,10 @@ public class ScreenX extends JFrame
     {
         List<Layer> layers;
         int activeIndex;
-        HistoryEntry(List<Layer> l, int i)
-        {
-            layers = l; activeIndex = i;
+        
+        HistoryEntry(List<Layer> l, int i) 
+        { 
+            layers = l; activeIndex = i; 
         }
     }
 
@@ -30,9 +31,9 @@ public class ScreenX extends JFrame
     private static final int MAX_HISTORY = 30;
 
     private double  zoomFactor = 1.0;
-    private boolean cropMode   = false;
+    private boolean cropMode = false;
 
-    private final JLabel  statusLabel = new JLabel("No image loaded");
+    private final JLabel statusLabel = new JLabel("No image loaded");
     private JMenuItem undoItem, redoItem;
     private JToggleButton cropBtn;
     private JScrollPane scrollPane;
@@ -69,7 +70,7 @@ public class ScreenX extends JFrame
         cropBar.setVisible(false);
 
         add(centerStack, BorderLayout.CENTER);
-        add(layerPanel, BorderLayout.EAST);
+        add(layerPanel,  BorderLayout.EAST);
 
         JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
         statusBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(180, 180, 180)));
@@ -88,12 +89,16 @@ public class ScreenX extends JFrame
     {
         BufferedImage composite = stack.composite();
         if (composite == null) return;
-        int sw = (int)(composite.getWidth() * zoomFactor);
+        int sw = (int)(composite.getWidth()  * zoomFactor);
         int sh = (int)(composite.getHeight() * zoomFactor);
         imageLabel.setIcon(new ImageIcon(composite.getScaledInstance(sw, sh, Image.SCALE_FAST)));
         layerPanel.rebuildList();
+        
         if (histogramWindow != null && histogramWindow.isVisible())
+        {
             histogramWindow.update(composite);
+        }
+        
         status(composite.getWidth() + " × " + composite.getHeight() + " px  |  Zoom: "
                 + String.format("%.0f%%", zoomFactor * 100)
                 + "  |  Layers: " + stack.getLayers().size()
@@ -149,7 +154,7 @@ public class ScreenX extends JFrame
 
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic('F');
-        addItem(fileMenu, "Open…",  KeyEvent.VK_O, e -> openImage());
+        addItem(fileMenu, "Open…", KeyEvent.VK_O, e -> openImage());
         addItem(fileMenu, "Save Composite…", KeyEvent.VK_S, e -> saveImage());
         fileMenu.addSeparator();
         addItem(fileMenu, "Import as New Layer…", -1, e -> importAsLayer());
@@ -174,9 +179,14 @@ public class ScreenX extends JFrame
         addItem(layerMenu, "Duplicate Layer", -1, e -> duplicateActiveLayer());
         addItem(layerMenu, "Delete Layer", -1, e -> deleteActiveLayer());
         layerMenu.addSeparator();
-        addItem(layerMenu, "Move Layer Up", -1, e -> { stack.moveUp(stack.getActiveIndex());   layerPanel.rebuildList(); });
-        addItem(layerMenu, "Move Layer Down", -1, e -> { stack.moveDown(stack.getActiveIndex()); layerPanel.rebuildList(); });
-        layerMenu.addSeparator();
+        addItem(layerMenu, "Move Layer Up", -1, e -> { 
+            stack.moveUp(stack.getActiveIndex());   
+            layerPanel.rebuildList(); });
+        
+        addItem(layerMenu, "Move Layer Down", -1, e -> { 
+            stack.moveDown(stack.getActiveIndex()); layerPanel.rebuildList(); });
+            layerMenu.addSeparator();
+        
         addItem(layerMenu, "Flatten to Single Layer", -1, e -> flattenLayers());
 
         JMenu fx = new JMenu("Effects");
@@ -282,7 +292,6 @@ public class ScreenX extends JFrame
     private void saveUndoSnapshot()
     {
         undoStack.push(new HistoryEntry(stack.snapshotLayers(), stack.getActiveIndex()));
-        
         if (undoStack.size() > MAX_HISTORY) undoStack.pollLast();
         redoStack.clear();
         updateUndoRedo();
@@ -314,16 +323,23 @@ public class ScreenX extends JFrame
         redoItem.setEnabled(!redoStack.isEmpty());
     }
 
-    private void openImage()
+    private static JFileChooser imageChooser()
     {
         JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Image files (png, jpg, gif, bmp, tiff)",
+                "png", "jpg", "jpeg", "gif", "bmp", "tiff", "tif"));
+        chooser.setAcceptAllFileFilterUsed(false);
+        return chooser;
+    }
+
+    private void openImage()
+    {
+        JFileChooser chooser = imageChooser();
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             try {
                 BufferedImage loaded = ImageIO.read(chooser.getSelectedFile());
-                
                 if (loaded == null) throw new Exception("Unsupported format");
-                
                 undoStack.clear(); redoStack.clear();
                 exitCropMode();
                 stack.getLayers().clear();
@@ -343,12 +359,11 @@ public class ScreenX extends JFrame
 
     private void importAsLayer()
     {
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = imageChooser();
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             try {
                 BufferedImage loaded = ImageIO.read(chooser.getSelectedFile());
-                
                 if (loaded == null) throw new Exception("Unsupported format");
                 saveUndoSnapshot();
                 stack.insertAboveActive(new Layer(chooser.getSelectedFile().getName(), toARGB(loaded)));
@@ -364,12 +379,15 @@ public class ScreenX extends JFrame
 
     private void saveImage()
     {
-        if (stack.isEmpty())
-        {
-            warnNoImage(); return;
+        if (stack.isEmpty()) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-
+        
         JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Image files (png, jpg, gif, bmp)", "png", "jpg", "jpeg", "gif", "bmp"));
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             SavingThis.save(stack.composite(), chooser.getSelectedFile());
@@ -380,10 +398,10 @@ public class ScreenX extends JFrame
     private void duplicateActiveLayer()
     {
         Layer active = stack.getActive();
-        
         if (active == null) 
         { 
-            warnNoImage(); return; 
+            warnNoImage(); 
+            return; 
         }
         saveUndoSnapshot();
         stack.insertAboveActive(active.deepCopy());
@@ -393,7 +411,6 @@ public class ScreenX extends JFrame
     private void deleteActiveLayer()
     {
         if (stack.getLayers().size() <= 1) return;
-        
         saveUndoSnapshot();
         stack.removeLayer(stack.getActiveIndex());
         layerPanel.rebuildList();
@@ -420,17 +437,14 @@ public class ScreenX extends JFrame
     {
         if (stack.isEmpty()) return;
         Dimension pane = scrollPane.getViewport().getSize();
-        
         zoomFactor = Math.min(pane.getWidth()  / (double) stack.canvasWidth(),
-                              
-                pane.getHeight() / (double) stack.canvasHeight());
+                              pane.getHeight() / (double) stack.canvasHeight());
         onStackChanged();
     }
 
     private void toggleHistogram()
     {
         if (histogramWindow == null) histogramWindow = new HistogramWindow();
-        
         if (histogramWindow.isVisible())
         {
             histogramWindow.setVisible(false);
@@ -446,11 +460,12 @@ public class ScreenX extends JFrame
     private void enterCropMode()
     {
         if (activeImage() == null) 
-        {
+        { 
             warnNoImage(); 
             if (cropBtn != null) cropBtn.setSelected(false); 
             return; 
         }
+        
         cropMode = true;
         cropCanvas.setImage(stack.composite(), zoomFactor);
         ((CardLayout) centerStack.getLayout()).show(centerStack, "crop");
@@ -480,8 +495,9 @@ public class ScreenX extends JFrame
         {
             int lw = layer.image.getWidth(), lh = layer.image.getHeight();
             int cx = Math.min(r.x, lw), cy = Math.min(r.y, lh);
-            int cw = Math.min(r.width, lw - cx);
+            int cw = Math.min(r.width,  lw - cx);
             int ch = Math.min(r.height, lh - cy);
+            
             if (cw <= 0 || ch <= 0) continue;
             BufferedImage sub  = layer.image.getSubimage(cx, cy, cw, ch);
             BufferedImage copy = new BufferedImage(cw, ch, BufferedImage.TYPE_INT_ARGB);
@@ -496,54 +512,61 @@ public class ScreenX extends JFrame
     {
         if (activeImage() == null) 
         { 
-            warnNoImage(); return; 
+            warnNoImage(); 
+            return; 
         }
-        
-        SliderPreview dlg = new SliderPreview(this, "Brightness / Contrast", activeImage(),
-                List.of(new SliderPreview.Param("Brightness", -255, 255, 0),
-                        new SliderPreview.Param("Contrast", -255, 255, 0)),
+        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Brightness / Contrast", activeImage(),
+                List.of(new SliderPreviewDialog.Param("Brightness", -255, 255, 0),
+                        new SliderPreviewDialog.Param("Contrast",   -255, 255, 0)),
                 v -> Effex.brightnessContrast(activeImage(), v[0], v[1]));
         dlg.setVisible(true);
-        if (dlg.isConfirmed()) { int[] v = dlg.values(); pushEffect(Effex.brightnessContrast(activeImage(), v[0], v[1])); }
+        if (dlg.isConfirmed()) 
+        { 
+            int[] v = dlg.values(); pushEffect(Effex.brightnessContrast(activeImage(), v[0], v[1])); 
+        }
     }
 
     private void doBlur()
     {
         if (activeImage() == null) 
-        { 
-            warnNoImage(); return; 
+        {
+            warnNoImage(); 
+            return; 
         }
-        
-        SliderPreview dlg = new SliderPreview(this, "Blur", activeImage(),
-                List.of(new SliderPreview.Param("Radius", 1, 15, 2)),
+        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Blur", activeImage(),
+                List.of(new SliderPreviewDialog.Param("Radius", 1, 15, 2)),
                 v -> Effex.blur(activeImage(), v[0]));
         dlg.setVisible(true);
+        
         if (dlg.isConfirmed()) pushEffect(Effex.blur(activeImage(), dlg.values()[0]));
     }
 
     private void doPixelate()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage(); return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
         
-        SliderPreview dlg = new SliderPreview(this, "Pixelate", activeImage(),
-                List.of(new SliderPreview.Param("Block Size", 2, 80, 10)),
+        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Pixelate", activeImage(),
+                List.of(new SliderPreviewDialog.Param("Block Size", 2, 80, 10)),
                 v -> Effex.pixelate(activeImage(), v[0]));
         dlg.setVisible(true);
+        
         if (dlg.isConfirmed()) pushEffect(Effex.pixelate(activeImage(), dlg.values()[0]));
     }
 
     private void doPosterize()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage(); return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
         
-        SliderPreview dlg = new SliderPreview(this, "Posterize", activeImage(),
-                List.of(new SliderPreview.Param("Levels", 2, 16, 4)),
+        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Posterize", activeImage(),
+                List.of(new SliderPreviewDialog.Param("Levels", 2, 16, 4)),
                 v -> Effex.posterize(activeImage(), v[0]));
         dlg.setVisible(true);
         if (dlg.isConfirmed()) pushEffect(Effex.posterize(activeImage(), dlg.values()[0]));
@@ -551,12 +574,14 @@ public class ScreenX extends JFrame
 
     private void doSolarize()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage(); return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-        SliderPreview dlg = new SliderPreview(this, "Solarize", activeImage(),
-                List.of(new SliderPreview.Param("Threshold", 0, 255, 128)),
+        
+        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Solarize", activeImage(),
+                List.of(new SliderPreviewDialog.Param("Threshold", 0, 255, 128)),
                 v -> Effex.solarize(activeImage(), v[0]));
         dlg.setVisible(true);
         if (dlg.isConfirmed()) pushEffect(Effex.solarize(activeImage(), dlg.values()[0]));
@@ -564,36 +589,40 @@ public class ScreenX extends JFrame
 
     private void doVignette()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage(); return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-        SliderPreview dlg = new SliderPreview(this, "Vignette", activeImage(),
-                List.of(new SliderPreview.Param("Strength", 0, 100, 85)),
+        SliderPreviewDialog dlg = new SliderPreviewDialog(this, "Vignette", activeImage(),
+                List.of(new SliderPreviewDialog.Param("Strength", 0, 100, 85)),
                 v -> Effex.vignette(activeImage(), v[0] / 100.0f));
         dlg.setVisible(true);
+        
         if (dlg.isConfirmed()) pushEffect(Effex.vignette(activeImage(), dlg.values()[0] / 100.0f));
     }
 
     private void openColorGradeWindow()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage(); return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-
-        if (colorGradeWindow != null && colorGradeWindow.isVisible())
-        {
-            colorGradeWindow.toFront(); return;
+        if (colorGradeWindow != null && colorGradeWindow.isVisible()) 
+        { 
+            colorGradeWindow.toFront(); 
+            return; 
         }
         final BufferedImage snapshot = activeImage();
-        colorGradeWindow = new ColorGradeWindow(snapshot, preview -> {
-            if (preview == null) return;
-            int sw = (int)(preview.getWidth() * zoomFactor);
-            int sh = (int)(preview.getHeight() * zoomFactor);
-            imageLabel.setIcon(new ImageIcon(preview.getScaledInstance(sw, sh, Image.SCALE_FAST)));
-            status("Color Grade preview — Apply or Cancel");
-        },
+        colorGradeWindow = new ColorGradeWindow(snapshot,
+                preview -> {
+                    if (preview == null) return;
+                    int sw = (int)(preview.getWidth() * zoomFactor);
+                    int sh = (int)(preview.getHeight() * zoomFactor);
+                    imageLabel.setIcon(new ImageIcon(preview.getScaledInstance(sw, sh, Image.SCALE_FAST)));
+                    status("Color Grade preview — Apply or Cancel");
+                },
                 () -> {
                     BufferedImage result = colorGradeWindow.getLastPreview();
                     if (result != null) pushEffect(result);
@@ -605,7 +634,8 @@ public class ScreenX extends JFrame
     {
         if (activeImage() == null) 
         { 
-            warnNoImage(); return;
+            warnNoImage(); 
+            return; 
         }
         r.run();
     }
@@ -621,8 +651,8 @@ public class ScreenX extends JFrame
     {
         JMenuItem item = new JMenuItem(label);
         if (key != -1)
-            item.setAccelerator(KeyStroke.getKeyStroke(key, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-        
+            item.setAccelerator(KeyStroke.getKeyStroke(key,
+                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         item.addActionListener(al);
         menu.add(item);
         return item;
@@ -641,15 +671,14 @@ public class ScreenX extends JFrame
         JOptionPane.showMessageDialog(this, "No image is open.", "ScreenX", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void status(String msg)
-    {
-        statusLabel.setText(msg);
+    private void status(String msg) 
+    { 
+        statusLabel.setText(msg); 
     }
 
     private static BufferedImage toARGB(BufferedImage src)
     {
         if (src.getType() == BufferedImage.TYPE_INT_ARGB) return src;
-        
         BufferedImage out = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
         out.createGraphics().drawImage(src, 0, 0, null);
         return out;

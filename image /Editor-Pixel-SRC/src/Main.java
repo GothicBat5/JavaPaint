@@ -12,9 +12,9 @@ public class Main
         }
         catch (Exception ignored) 
         {
-          // File manager:: Native OS opne ??      
+          // File manager:: Native OS opne ?? try      
         }
-
+        System.out.println("\nProgram Started\n");
         SwingUtilities.invokeLater(ScreenX::new);
     }
 }

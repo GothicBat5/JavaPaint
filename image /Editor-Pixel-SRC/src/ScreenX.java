@@ -19,10 +19,10 @@ public class ScreenX extends JFrame
     {
         List<Layer> layers;
         int activeIndex;
-
-        HistoryEntry(List<Layer> l, int i)
-        {
-            layers = l; activeIndex = i;
+        HistoryEntry(List<Layer> l, int i) 
+        { 
+            layers = l; 
+            activeIndex = i; 
         }
     }
 
@@ -32,20 +32,24 @@ public class ScreenX extends JFrame
 
     private double  zoomFactor = 1.0;
     private boolean cropMode = false;
+    private boolean textMode = false;
 
     private final JLabel statusLabel = new JLabel("No image loaded");
     private JMenuItem undoItem, redoItem;
     private JToggleButton cropBtn;
+    private JToggleButton textBtn;
     private JScrollPane scrollPane;
     private CropCanvas cropCanvas;
     private JPanel cropBar;
     private JPanel centerStack;
     private LayerPanel layerPanel;
+    private TextFontControl textControl;
 
     private final JLabel imageLabel = new JLabel(placeholderIcon());
 
-    private ColorGradeWindow colorGradeWindow = null;
-    private HistogramWindow histogramWindow  = null;
+    private ColorGradeWindow colorGradeWindow    = null;
+    private HistogramWindow histogramWindow     = null;
+    private ViewportController viewportController  = null;
 
     public ScreenX()
     {
@@ -58,11 +62,21 @@ public class ScreenX extends JFrame
         scrollPane = new JScrollPane(imageLabel);
         scrollPane.getViewport().setBackground(new Color(40, 40, 40));
 
+        viewportController = new ViewportController(scrollPane, imageLabel, zoomFactor, newZoom -> {
+            zoomFactor = newZoom;
+            
+            if (textMode) textControl.syncZoom(zoomFactor);
+            onStackChanged();
+        });
+
         cropCanvas = new CropCanvas(this::commitCrop);
+        textControl = new TextFontControl(this::commitText);
+        textControl.setOnCancel(this::exitTextMode);
 
         centerStack = new JPanel(new CardLayout());
         centerStack.add(scrollPane, "view");
         centerStack.add(cropCanvas, "crop");
+        centerStack.add(textControl.getCanvas(), "text");
 
         layerPanel = new LayerPanel(stack);
 
@@ -89,16 +103,13 @@ public class ScreenX extends JFrame
     {
         BufferedImage composite = stack.composite();
         if (composite == null) return;
-        int sw = (int)(composite.getWidth()  * zoomFactor);
+        int sw = (int)(composite.getWidth() * zoomFactor);
         int sh = (int)(composite.getHeight() * zoomFactor);
         imageLabel.setIcon(new ImageIcon(composite.getScaledInstance(sw, sh, Image.SCALE_FAST)));
         layerPanel.rebuildList();
-
+        
         if (histogramWindow != null && histogramWindow.isVisible())
-        {
             histogramWindow.update(composite);
-        }
-
         status(composite.getWidth() + " × " + composite.getHeight() + " px  |  Zoom: "
                 + String.format("%.0f%%", zoomFactor * 100)
                 + "  |  Layers: " + stack.getLayers().size()
@@ -154,7 +165,7 @@ public class ScreenX extends JFrame
 
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic('F');
-        addItem(fileMenu, "Open…", KeyEvent.VK_O, e -> openImage());
+        addItem(fileMenu, "Open…",  KeyEvent.VK_O, e -> openImage());
         addItem(fileMenu, "Save Composite…", KeyEvent.VK_S, e -> saveImage());
         fileMenu.addSeparator();
         addItem(fileMenu, "Import as New Layer…", -1, e -> importAsLayer());
@@ -170,7 +181,7 @@ public class ScreenX extends JFrame
         addItem(viewMenu, "Zoom In", KeyEvent.VK_EQUALS, e -> zoom(1.25));
         addItem(viewMenu, "Zoom Out", KeyEvent.VK_MINUS,  e -> zoom(0.8));
         addItem(viewMenu, "Fit to Window", -1, e -> fitToWindow());
-        addItem(viewMenu, "Reset Zoom", KeyEvent.VK_0, e -> { zoomFactor = 1.0; onStackChanged(); });
+        addItem(viewMenu, "Reset Zoom", KeyEvent.VK_0,  e -> { zoomFactor = 1.0; onStackChanged(); });
         viewMenu.addSeparator();
         addItem(viewMenu, "Histogram", -1, e -> toggleHistogram());
 
@@ -179,14 +190,9 @@ public class ScreenX extends JFrame
         addItem(layerMenu, "Duplicate Layer", -1, e -> duplicateActiveLayer());
         addItem(layerMenu, "Delete Layer", -1, e -> deleteActiveLayer());
         layerMenu.addSeparator();
-        addItem(layerMenu, "Move Layer Up", -1, e -> {
-            stack.moveUp(stack.getActiveIndex());
-            layerPanel.rebuildList(); });
-
-        addItem(layerMenu, "Move Layer Down", -1, e -> {
-            stack.moveDown(stack.getActiveIndex()); layerPanel.rebuildList(); });
+        addItem(layerMenu, "Move Layer Up", -1, e -> { stack.moveUp(stack.getActiveIndex()); layerPanel.rebuildList(); });
+        addItem(layerMenu, "Move Layer Down", -1, e -> { stack.moveDown(stack.getActiveIndex()); layerPanel.rebuildList(); });
         layerMenu.addSeparator();
-
         addItem(layerMenu, "Flatten to Single Layer", -1, e -> flattenLayers());
 
         JMenu fx = new JMenu("Effects");
@@ -210,7 +216,7 @@ public class ScreenX extends JFrame
         fx.add(lightMenu);
 
         JMenu blurMenu = new JMenu("Blur & Sharpen");
-        addEffectItem(blurMenu, "Blur…",   this::doBlur);
+        addEffectItem(blurMenu, "Blur…", this::doBlur);
         addEffectItem(blurMenu, "Sharpen", () -> pushEffect(Effex.sharpen(activeImage())));
         fx.add(blurMenu);
 
@@ -227,6 +233,10 @@ public class ScreenX extends JFrame
         addEffectItem(geoMenu, "Rotate 90° CW", () -> pushEffect(Effex.rotate90(activeImage())));
         addEffectItem(geoMenu, "Rotate 90° CCW", () -> pushEffect(Effex.rotate90CCW(activeImage())));
         fx.add(geoMenu);
+
+        JMenu textMenu = new JMenu("Text");
+        addEffectItem(textMenu, "Add Text…", this::enterTextMode);
+        fx.add(textMenu);
 
         bar.add(fileMenu);
         bar.add(editMenu);
@@ -260,12 +270,20 @@ public class ScreenX extends JFrame
             else exitCropMode();
         });
         tb.add(cropBtn);
+
+        textBtn = new JToggleButton("Text");
+        textBtn.setFocusable(false);
+        textBtn.addActionListener(e -> {
+            if (textBtn.isSelected()) enterTextMode();
+            else exitTextMode();
+        });
+        tb.add(textBtn);
         tb.addSeparator();
 
         tb.add(toolButton("Grayscale", e -> applyIfLoaded(() -> pushEffect(Effex.toGrayscale(activeImage())))));
         tb.add(toolButton("Invert", e -> applyIfLoaded(() -> pushEffect(Effex.invert(activeImage())))));
         tb.add(toolButton("Sepia", e -> applyIfLoaded(() -> pushEffect(Effex.sepia(activeImage())))));
-        tb.add(toolButton("B/C…", e -> applyIfLoaded(this::doBrightnessContrast)));
+        tb.add(toolButton("B/C…",  e -> applyIfLoaded(this::doBrightnessContrast)));
         tb.add(toolButton("Blur…", e -> applyIfLoaded(this::doBlur)));
         tb.add(toolButton("Sharpen", e -> applyIfLoaded(() -> pushEffect(Effex.sharpen(activeImage())))));
         tb.add(toolButton("Edge", e -> applyIfLoaded(() -> pushEffect(Effex.edgeDetect(activeImage())))));
@@ -379,12 +397,12 @@ public class ScreenX extends JFrame
 
     private void saveImage()
     {
-        if (stack.isEmpty())
-        {
-            warnNoImage();
-            return;
+        if (stack.isEmpty()) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-
+        
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
                 "Image files (png, jpg, gif, bmp)", "png", "jpg", "jpeg", "gif", "bmp"));
@@ -398,10 +416,10 @@ public class ScreenX extends JFrame
     private void duplicateActiveLayer()
     {
         Layer active = stack.getActive();
-        if (active == null)
-        {
-            warnNoImage();
-            return;
+        if (active == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
         saveUndoSnapshot();
         stack.insertAboveActive(active.deepCopy());
@@ -430,6 +448,7 @@ public class ScreenX extends JFrame
     {
         zoomFactor *= factor;
         zoomFactor = Math.max(0.05, Math.min(zoomFactor, 20.0));
+        if (viewportController != null) viewportController.setZoom(zoomFactor);
         onStackChanged();
     }
 
@@ -437,8 +456,9 @@ public class ScreenX extends JFrame
     {
         if (stack.isEmpty()) return;
         Dimension pane = scrollPane.getViewport().getSize();
-        zoomFactor = Math.min(pane.getWidth()  / (double) stack.canvasWidth(),
+        zoomFactor = Math.min(pane.getWidth() / (double) stack.canvasWidth(),
                 pane.getHeight() / (double) stack.canvasHeight());
+        if (viewportController != null) viewportController.setZoom(zoomFactor);
         onStackChanged();
     }
 
@@ -459,13 +479,13 @@ public class ScreenX extends JFrame
 
     private void enterCropMode()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            if (cropBtn != null) cropBtn.setSelected(false);
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            if (cropBtn != null) cropBtn.setSelected(false); 
+            return; 
         }
-
+        
         cropMode = true;
         cropCanvas.setImage(stack.composite(), zoomFactor);
         ((CardLayout) centerStack.getLayout()).show(centerStack, "crop");
@@ -488,6 +508,47 @@ public class ScreenX extends JFrame
         onStackChanged();
     }
 
+    private void enterTextMode()
+    {
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            if (textBtn != null) textBtn.setSelected(false); 
+            return; 
+        }
+        
+        if (cropMode) exitCropMode();
+        textMode = true;
+        textControl.activate(stack.composite(), zoomFactor);
+        ((CardLayout) centerStack.getLayout()).show(centerStack, "text");
+        remove(layerPanel);
+        add(textControl, BorderLayout.EAST);
+        revalidate();
+        if (textBtn != null) textBtn.setSelected(true);
+        status("Text — move cursor over image to preview, click to place");
+    }
+
+    private void exitTextMode()
+    {
+        textMode = false;
+        textControl.deactivate();
+        ((CardLayout) centerStack.getLayout()).show(centerStack, "view");
+        remove(textControl);
+        add(layerPanel, BorderLayout.EAST);
+        revalidate();
+        if (textBtn != null) textBtn.setSelected(false);
+        onStackChanged();
+    }
+
+    private void commitText(BufferedImage result, String text)
+    {
+        saveUndoSnapshot();
+        stack.getActive().image = result;
+        onStackChanged();
+        status("Text placed: \"" + text + "\"  — click again to place more, or Cancel");
+        textControl.activate(stack.composite(), zoomFactor);
+    }
+
     private void commitCrop(java.awt.Rectangle r)
     {
         saveUndoSnapshot();
@@ -497,7 +558,6 @@ public class ScreenX extends JFrame
             int cx = Math.min(r.x, lw), cy = Math.min(r.y, lh);
             int cw = Math.min(r.width,  lw - cx);
             int ch = Math.min(r.height, lh - cy);
-
             if (cw <= 0 || ch <= 0) continue;
             BufferedImage sub  = layer.image.getSubimage(cx, cy, cw, ch);
             BufferedImage copy = new BufferedImage(cw, ch, BufferedImage.TYPE_INT_ARGB);
@@ -510,76 +570,73 @@ public class ScreenX extends JFrame
 
     private void doBrightnessContrast()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
+        
         SliderPreview dlg = new SliderPreview(this, "Brightness / Contrast", activeImage(),
                 List.of(new SliderPreview.Param("Brightness", -255, 255, 0),
                         new SliderPreview.Param("Contrast",   -255, 255, 0)),
                 v -> Effex.brightnessContrast(activeImage(), v[0], v[1]));
         dlg.setVisible(true);
-        if (dlg.isConfirmed())
-        {
-            int[] v = dlg.values(); pushEffect(Effex.brightnessContrast(activeImage(), v[0], v[1]));
-        }
+        if (dlg.isConfirmed()) { int[] v = dlg.values(); pushEffect(Effex.brightnessContrast(activeImage(), v[0], v[1])); }
     }
 
     private void doBlur()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
+        
         SliderPreview dlg = new SliderPreview(this, "Blur", activeImage(),
                 List.of(new SliderPreview.Param("Radius", 1, 15, 2)),
                 v -> Effex.blur(activeImage(), v[0]));
         dlg.setVisible(true);
-
         if (dlg.isConfirmed()) pushEffect(Effex.blur(activeImage(), dlg.values()[0]));
     }
 
     private void doPixelate()
     {
         if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        { 
+            warnNoImage(); 
+            return; 
         }
-
+        
         SliderPreview dlg = new SliderPreview(this, "Pixelate", activeImage(),
                 List.of(new SliderPreview.Param("Block Size", 2, 80, 10)),
                 v -> Effex.pixelate(activeImage(), v[0]));
         dlg.setVisible(true);
-
         if (dlg.isConfirmed()) pushEffect(Effex.pixelate(activeImage(), dlg.values()[0]));
     }
 
     private void doPosterize()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-
         SliderPreview dlg = new SliderPreview(this, "Posterize", activeImage(),
                 List.of(new SliderPreview.Param("Levels", 2, 16, 4)),
                 v -> Effex.posterize(activeImage(), v[0]));
         dlg.setVisible(true);
+        
         if (dlg.isConfirmed()) pushEffect(Effex.posterize(activeImage(), dlg.values()[0]));
     }
 
     private void doSolarize()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-
+        
         SliderPreview dlg = new SliderPreview(this, "Solarize", activeImage(),
                 List.of(new SliderPreview.Param("Threshold", 0, 255, 128)),
                 v -> Effex.solarize(activeImage(), v[0]));
@@ -589,31 +646,33 @@ public class ScreenX extends JFrame
 
     private void doVignette()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
+        
         SliderPreview dlg = new SliderPreview(this, "Vignette", activeImage(),
                 List.of(new SliderPreview.Param("Strength", 0, 100, 85)),
                 v -> Effex.vignette(activeImage(), v[0] / 100.0f));
         dlg.setVisible(true);
-
         if (dlg.isConfirmed()) pushEffect(Effex.vignette(activeImage(), dlg.values()[0] / 100.0f));
     }
 
     private void openColorGradeWindow()
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
-        if (colorGradeWindow != null && colorGradeWindow.isVisible())
-        {
-            colorGradeWindow.toFront();
-            return;
+        
+        if (colorGradeWindow != null && colorGradeWindow.isVisible()) 
+        { 
+            colorGradeWindow.toFront(); 
+            return; 
         }
+        
         final BufferedImage snapshot = activeImage();
         colorGradeWindow = new ColorGradeWindow(snapshot,
                 preview -> {
@@ -632,10 +691,10 @@ public class ScreenX extends JFrame
 
     private void applyIfLoaded(Runnable r)
     {
-        if (activeImage() == null)
-        {
-            warnNoImage();
-            return;
+        if (activeImage() == null) 
+        { 
+            warnNoImage(); 
+            return; 
         }
         r.run();
     }
@@ -666,14 +725,97 @@ public class ScreenX extends JFrame
         return btn;
     }
 
+    private void attachScrollZoom()
+    {
+        scrollPane.addMouseWheelListener(e -> {
+            if (stack.isEmpty()) return;
+            double factor = e.getWheelRotation() < 0 ? 1.15 : 1.0 / 1.15;
+
+            JViewport vp = scrollPane.getViewport();
+            Point mouse = e.getPoint();
+            Point vpPos = vp.getViewPosition();
+
+            double oldZoom = zoomFactor;
+            zoomFactor *= factor;
+            zoomFactor = Math.max(0.05, Math.min(zoomFactor, 20.0));
+
+            double ratio = zoomFactor / oldZoom;
+            int newX = (int)((vpPos.x + mouse.x) * ratio - mouse.x);
+            int newY = (int)((vpPos.y + mouse.y) * ratio - mouse.y);
+
+            onStackChanged();
+
+            SwingUtilities.invokeLater(() -> {
+                Dimension viewSize = vp.getView().getPreferredSize();
+                int cx = Math.max(0, Math.min(newX, viewSize.width - vp.getWidth()));
+                int cy = Math.max(0, Math.min(newY, viewSize.height - vp.getHeight()));
+                vp.setViewPosition(new Point(cx, cy));
+            });
+        });
+    }
+
+    private Point panStart = null;
+    private Point panOrigin = null;
+    private boolean panning = false;
+
+    private void attachPan()
+    {
+        MouseAdapter ma = new MouseAdapter()
+        {
+            @Override public void mousePressed(MouseEvent e)
+            {
+                if (isPanTrigger(e))
+                {
+                    panning = true;
+                    panStart = e.getLocationOnScreen();
+                    panOrigin = scrollPane.getViewport().getViewPosition();
+                    scrollPane.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                }
+            }
+
+            @Override public void mouseDragged(MouseEvent e)
+            {
+                if (!panning) return;
+                Point now  = e.getLocationOnScreen();
+                int dx = panStart.x - now.x;
+                int dy = panStart.y - now.y;
+
+                JViewport vp = scrollPane.getViewport();
+                Dimension viewSize = vp.getView().getPreferredSize();
+                int newX = Math.max(0, Math.min(panOrigin.x + dx, viewSize.width  - vp.getWidth()));
+                int newY = Math.max(0, Math.min(panOrigin.y + dy, viewSize.height - vp.getHeight()));
+                vp.setViewPosition(new Point(newX, newY));
+            }
+
+            @Override public void mouseReleased(MouseEvent e)
+            {
+                if (panning)
+                {
+                    panning = false;
+                    scrollPane.setCursor(Cursor.getDefaultCursor());
+                }
+            }
+
+            private boolean isPanTrigger(MouseEvent e)
+            {
+                return SwingUtilities.isMiddleMouseButton(e) || (SwingUtilities.isLeftMouseButton(e) && e.isAltDown());
+            }
+        };
+
+        scrollPane.getViewport().addMouseListener(ma);
+        scrollPane.getViewport().addMouseMotionListener(ma);
+        imageLabel.addMouseListener(ma);
+        imageLabel.addMouseMotionListener(ma);
+    }
+
     private void warnNoImage()
     {
         JOptionPane.showMessageDialog(this, "No image is open.", "ScreenX", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void status(String msg)
-    {
-        statusLabel.setText(msg);
+    private void status(String msg) 
+    { 
+        statusLabel.setText(msg); 
     }
 
     private static BufferedImage toARGB(BufferedImage src)

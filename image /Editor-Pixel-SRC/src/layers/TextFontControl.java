@@ -121,7 +121,7 @@ public class TextFontControl extends JPanel
     public void setOnCancel(Runnable r) 
     { 
       this.onCancel = r; 
-    +}
+    }
 
     public TextCanvas getCanvas() 
     { 

@@ -38,22 +38,28 @@ public class RoundedButton extends JButton
 
             public void mouseEntered(MouseEvent e)
             {
-                hovered = true;  glowStrength = 3; repaint();
+                hovered = true;  
+                glowStrength = 3; 
+                repaint();
             }
 
             public void mouseExited (MouseEvent e)
             {
-                hovered = false; glowStrength = 0; repaint();
+                hovered = false; 
+                glowStrength = 0; 
+                repaint();
             }
 
             public void mousePressed(MouseEvent e)
             {
-                pressed = true;  repaint();
+                pressed = true;  
+                repaint();
             }
 
             public void mouseReleased(MouseEvent e)
             {
-                pressed = false; repaint();
+                pressed = false; 
+                repaint();
             }
         });
     }

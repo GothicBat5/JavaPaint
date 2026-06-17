@@ -12,3 +12,8 @@ Check: image / editor-pixel-src for the image editing program
 Fully functional image editing program with effects
 
 Editor: A text based editor with file saving
+
+Java:
+
+[LinkOne](https://docs.oracle.com/javase/8/docs/technotes/guides/language/)
+Documentations: [LinkTwo](https://docs.oracle.com/javase/8/docs/api/)

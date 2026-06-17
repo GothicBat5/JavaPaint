@@ -19,3 +19,5 @@ Java:
 
 [Language](https://docs.oracle.com/javase/8/docs/technotes/guides/language/)
 
+![Color](html/color.png)
+

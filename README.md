@@ -15,5 +15,7 @@ Editor: A text based editor with file saving
 
 Java:
 
-[LinkOne](https://docs.oracle.com/javase/8/docs/technotes/guides/language/)
-Documentations: [LinkTwo](https://docs.oracle.com/javase/8/docs/api/)
+[Documentations](https://docs.oracle.com/javase/8/docs/api/)
+
+[Language](https://docs.oracle.com/javase/8/docs/technotes/guides/language/)
+

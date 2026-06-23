@@ -259,7 +259,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case ID_EDIT_COPY: SendMessage(hEdit, WM_COPY, 0, 0); break;
         case ID_EDIT_PASTE: SendMessage(hEdit, WM_PASTE, 0, 0); break;
         case ID_EDIT_SELALL:SendMessage(hEdit, EM_SETSEL, 0, -1); break;
-        case ID_VIEW_FONT:  ChooseEditorFont(hwnd); break;
+        case ID_VIEW_FONT: ChooseEditorFont(hwnd); break;
 
         case ID_HELP_ABOUT:
             MessageBoxA(hwnd,
@@ -311,15 +311,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 900, 650,
         nullptr, BuildMenu(), hInstance, nullptr);
 
-    if (lpCmdLine && lpCmdLine[0] != '\0') {
+    if (lpCmdLine && lpCmdLine[0] != '\0') 
+    {
         lstrcpyA(currentFile, lpCmdLine);
 
-        if (currentFile[0] == '"') {
+        if (currentFile[0] == '"') 
+        {
             lstrcpyA(currentFile, currentFile + 1);
             currentFile[lstrlenA(currentFile) - 1] = '\0';
         }
         std::ifstream fs(currentFile);
-        if (fs) {
+        
+        if (fs) 
+        {
             std::ostringstream ss; ss << fs.rdbuf();
             SetWindowTextA(hEdit, ss.str().c_str());
             UpdateTitle(hwnd);

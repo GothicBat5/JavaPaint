@@ -2,6 +2,8 @@ import java.util.Scanner;
 
 public class NumberListener
 {
+    private static int analyzedCount = 0;
+
     private static void startProgram()
     {
         Scanner scan = new Scanner(System.in);
@@ -11,7 +13,7 @@ public class NumberListener
         while(true)
         {
             System.out.print("Enter a number: ");
-            String input = scan.nextLine();
+            String input = scan.nextLine().trim();
 
             if(isExitCommand(input))
             {
@@ -44,6 +46,8 @@ public class NumberListener
             long number = Long.parseLong(input);
 
             displayResult(number);
+
+            analyzedCount++;
         }
         catch(NumberFormatException e)
         {
@@ -60,6 +64,10 @@ public class NumberListener
         if(isPrime(number))
         {
             result.append("- Prime\n");
+        }
+        else
+        {
+            result.append("- Not Prime\n");
         }
 
         if(number % 2 == 0)
@@ -106,9 +114,10 @@ public class NumberListener
 
     private static void endProgram()
     {
-        System.out.println("\nProgram Ended. Thank you.");
+        System.out.println("\nNumbers analyzed: " + analyzedCount);
+        System.out.println("Program Ended. Thank you.");
     }
-    
+
     public static void main(String[] args)
     {
         startProgram();

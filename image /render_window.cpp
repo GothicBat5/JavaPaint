@@ -31,7 +31,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
 
         CW_USEDEFAULT, CW_USEDEFAULT,
         800, 600,
-
         NULL,
         NULL,
         hInstance,
@@ -47,6 +46,5 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-
     return 0;
 }

@@ -1,6 +1,5 @@
 # Pixel Manipulation Program
 
-
 ## The main source code for my Java Paint are located in src/paint. 
 
 ### I started the Java paint around 3rd Quarter of 2025, it was all just for fun.
@@ -27,4 +26,8 @@ Java:
 
 -
 ![Color](calc/color.png)
+
+```java
+SwingUtilities.invokeLater(Launcher::new);
+```
 
